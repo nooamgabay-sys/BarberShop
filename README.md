@@ -1,1 +1,2312 @@
-# BarberShop
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>נחשון Barber</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/he.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+/* ── CSS VARIABLES ─────────────────────────────────── */
+:root {
+  --bg: #0a0a0a;
+  --card-bg: rgba(22, 22, 22, 0.65);
+  --nav-bg: rgba(8, 8, 8, 0.88);
+  --gold: #c9a84c;
+  --yellow: #ffcc33;
+  --text: #e8e8e8;
+  --text-muted: rgba(255,255,255,0.52);
+  --border: rgba(255,255,255,0.07);
+  --border-gold: rgba(201, 168, 76, 0.22);
+  --glow: rgba(201, 168, 76, 0.4);
+  --yellow-glow: rgba(255,204,51,0.5);
+  --sym-color: rgba(201, 168, 76, 0.11);
+}
+body.light-mode {
+  --bg: #f2f2f2;
+  --card-bg: rgba(255,255,255,0.72);
+  --nav-bg: rgba(255,255,255,0.88);
+  --text: #121212;
+  --text-muted: rgba(18,18,18,0.62);
+  --border: rgba(0,0,0,0.07);
+  --border-gold: rgba(201, 168, 76, 0.3);
+  --glow: rgba(201, 168, 76, 0.22);
+  --sym-color: rgba(18,18,18,0.07);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Heebo', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background-color: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+section { padding: 8rem 2rem; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; opacity: 0; transform: translateY(32px); transition: opacity 0.75s ease-out, transform 0.75s ease-out; }
+section.reveal { opacity: 1; transform: translateY(0); }
+::-webkit-scrollbar { width: 7px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--gold), #7a5a20); border-radius: 4px; }
+::placeholder { color: var(--text-muted) !important; opacity: 1; }
+
+/* ── NAV ─────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; width: 100%;
+  background: var(--nav-bg);
+  z-index: 100; display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid var(--border-gold);
+  transition: padding 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+}
+/* HAMBURGER & SIDEBAR */
+.hamburger {
+  display: flex; flex-direction: column; justify-content: space-between;
+  width: 30px; height: 21px; cursor: pointer; z-index: 1001; position: relative;
+}
+.hamburger span {
+  display: block; height: 3px; width: 100%; background: var(--gold);
+  border-radius: 3px; transition: all 0.3s ease;
+  box-shadow: 0 0 5px rgba(201,168,76,0.3);
+}
+.hamburger.active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+.sidebar-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+  background: rgba(0,0,0,0.6);
+  z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+}
+.sidebar-overlay.active { opacity: 1; visibility: visible; }
+
+.sidebar-menu {
+  position: fixed; top: 0; right: -320px; width: 280px; height: 100vh;
+  background: var(--nav-bg); border-left: 1px solid var(--border-gold);
+  z-index: 1000; display: flex; flex-direction: column; padding: 6rem 2.5rem 2rem;
+  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: -5px 0 40px rgba(0,0,0,0.6);
+  gap: 2rem;
+}
+.sidebar-menu.active { right: 0; }
+
+.sidebar-menu a {
+  color: var(--text); text-decoration: none; font-weight: 600;
+  font-size: 1.4rem; transition: color 0.3s; cursor: pointer;
+  position: relative; align-self: flex-start;
+}
+.sidebar-menu a:hover, .sidebar-menu a.nav-active { color: var(--gold); text-shadow: 0 0 10px var(--glow); }
+.sidebar-menu a::after {
+  content: ''; position: absolute; bottom: -4px; right: 0;
+  width: 0; height: 2px; background: var(--gold);
+  border-radius: 1px; transition: width 0.3s ease;
+  box-shadow: 0 0 8px var(--glow);
+}
+.sidebar-menu a:hover::after, .sidebar-menu a.nav-active::after { width: 100%; }
+
+.sidebar-menu .theme-btn {
+  align-self: flex-start; margin-bottom: 1rem;
+}
+
+.admin-hidden { display: none !important; }
+nav .logo {
+  color: var(--gold); font-weight: 800; font-size: 1.5rem;
+  letter-spacing: 1px; cursor: default !important;
+  text-shadow: 0 0 20px rgba(201,168,76,0.25);
+}
+
+/* ── GLASSMORPHISM ────────────────────────────────── */
+.glass {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 2.5rem;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), border-color 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.glass:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px var(--border-gold);
+  border-color: var(--border-gold);
+}
+.no-hover:hover { transform: none !important; box-shadow: none !important; border-color: var(--border) !important; }
+
+/* ── TYPOGRAPHY ──────────────────────────────────── */
+h1 {
+  font-size: 4.5rem; font-weight: 800; text-align: center; position: relative;
+  margin-bottom: 1.5rem; opacity: 0;
+  background: linear-gradient(135deg, #fff 0%, var(--gold) 45%, #fff 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  background-size: 200% auto;
+  animation: slideDown 1s ease forwards, shimmer 5s linear 1s infinite;
+}
+@keyframes slideDown { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes shimmer { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+h1::after {
+  content: ''; position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%);
+  width: 100px; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  border-radius: 2px;
+}
+h2 { font-size: 2.8rem; margin-bottom: 3rem; color: var(--gold); text-align: center; }
+
+/* ── BUTTONS ──────────────────────────────────────── */
+.btn {
+  background: linear-gradient(135deg, var(--gold) 0%, #a07828 100%);
+  color: #000; border: none; padding: 1.2rem 2.5rem;
+  font-size: 1.3rem; font-weight: 800; border-radius: 14px; cursor: pointer;
+  text-decoration: none; display: inline-block;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  position: relative; overflow: hidden;
+}
+.btn::before {
+  content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transition: left 0.5s ease;
+}
+.btn:hover::before { left: 100%; }
+.btn:hover {
+  background: linear-gradient(135deg, var(--yellow) 0%, var(--gold) 100%);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.35), 0 0 28px var(--glow);
+}
+.btn:active { transform: scale(0.97); }
+
+/* ── STATS ──────────────────────────────────────────── */
+.stats { display: flex; gap: 2.5rem; width: 100%; max-width: 1100px; margin-top: 4rem; opacity: 0; animation: slideUp 1s 0.5s ease forwards; }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.stats .glass { flex: 1; text-align: center; font-size: 1.4rem; font-weight: 600; }
+.stats .glass span { display: block; font-size: 3.5rem; color: var(--gold); margin-bottom: 1rem; text-shadow: 0 0 25px var(--glow); }
+
+/* ── FORM / BOOKING FLOW ──────────────────────────── */
+.form-container { width: 100%; max-width: 650px; position: relative; overflow: hidden; }
+.step { display: none; animation: fadeSlide .5s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.step.active { display: block; }
+@keyframes fadeSlide { from { opacity: 0; transform: translateX(18px); } to { opacity: 1; transform: translateX(0); } }
+
+.input-group { margin-bottom: 2rem; text-align: right; }
+label { display: block; margin-bottom: 0.8rem; color: var(--text); font-size: 1.05rem; font-weight: 600; letter-spacing: 0.3px; }
+input, select, textarea {
+  width: 100%; padding: 1.2rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 14px; color: var(--text);
+  font-family: inherit; font-size: 1.1rem;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s; resize: vertical;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(201,168,76,0.14), 0 0 22px rgba(201,168,76,0.12);
+  background: rgba(201,168,76,0.04);
+}
+textarea { min-height: 120px; }
+select option { background: #1a1a1a; color: var(--text); }
+
+/* ── CHIPS ───────────────────────────────────────── */
+.chips { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+.chip {
+  padding: 0.7rem 1.4rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 30px; cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 1rem; color: var(--text-muted);
+}
+.chip:hover {
+  background: rgba(201,168,76,0.1);
+  color: var(--gold); border-color: var(--border-gold);
+  transform: translateY(-1px);
+}
+.chip.selected {
+  background: linear-gradient(135deg, var(--gold), #a07828) !important;
+  color: #000 !important; border-color: var(--gold);
+  box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+  font-weight: 700;
+}
+
+/* ── TIME SLOTS ──────────────────────────────────── */
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+.time-slot {
+  padding: 1.2rem; text-align: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 14px; cursor: pointer; font-size: 1.2rem;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  color: var(--text); font-weight: 600;
+}
+.time-slot:hover {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  transform: scale(1.07);
+  box-shadow: 0 0 22px rgba(201,168,76,0.2), inset 0 0 14px rgba(201,168,76,0.04);
+  color: var(--gold);
+}
+.time-slot.selected {
+  background: linear-gradient(135deg, var(--gold), #a07828) !important;
+  color: #000 !important; font-weight: 800;
+  box-shadow: 0 4px 22px var(--glow), 0 0 30px rgba(201,168,76,0.2);
+  border-color: var(--gold) !important; opacity: 1 !important;
+  transform: scale(1.06);
+}
+.time-slot.occupied, .time-slot.past {
+  background: rgba(255,255,255,0.02) !important;
+  color: rgba(255,255,255,0.15) !important; cursor: not-allowed !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+  opacity: 0.22 !important; filter: grayscale(1); pointer-events: none !important;
+}
+
+body.light-mode .time-slot { background: rgba(255,255,255,0.8); border: 1px solid #ddd; color: #121212; }
+body.light-mode .time-slot:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
+body.light-mode .time-slot.selected { background: linear-gradient(135deg,#c9a84c,#a07828) !important; color: #ffffff !important; box-shadow: 0 8px 25px rgba(201,168,76,0.4); border-color: #c9a84c !important; }
+body.light-mode .time-slot.occupied, body.light-mode .time-slot.past { background: #f0f0f0 !important; color: #ccc !important; border-color: #eee !important; filter: grayscale(1); }
+body.light-mode #bookingSummary span { color: #121212 !important; font-weight: 800 !important; }
+
+/* ── PROGRESS STEPPER ─────────────────────────────── */
+.progress {
+  display: flex; justify-content: space-between; margin-bottom: 3rem;
+  position: relative; align-items: center;
+}
+.progress::before {
+  content: ''; position: absolute; top: 50%; left: 0; right: 0;
+  height: 2px; background: var(--border); z-index: 0; transform: translateY(-50%);
+}
+.progress-fill {
+  position: absolute; top: 50%; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--gold), rgba(201,168,76,0.35));
+  z-index: 0; transform: translateY(-50%); transition: width 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+  box-shadow: 0 0 10px var(--glow); width: 0%;
+}
+.dot {
+  width: 46px; height: 46px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1.1rem; transition: all 0.4s ease;
+  z-index: 1; cursor: pointer; color: var(--text-muted);
+}
+.dot:hover { border-color: var(--gold); transform: scale(1.12); color: var(--gold); }
+.dot.active {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, var(--gold), #a07828);
+  color: #000 !important;
+  box-shadow: 0 0 25px var(--glow);
+  text-shadow: none; transform: scale(1.1);
+}
+
+/* ── ACTIONS ──────────────────────────────────────── */
+.actions { display: flex; justify-content: space-between; margin-top: 3rem; }
+.btn-sm { padding: 0.8rem 1.5rem; font-size: 1rem; }
+.btn-outline { background: transparent; border: 2px solid var(--gold); color: var(--gold); box-shadow: none; }
+.btn-outline:hover { background: rgba(201,168,76,0.08); color: var(--gold); box-shadow: 0 0 18px rgba(201,168,76,0.14); transform: translateY(-2px) scale(1.01); }
+.btn-danger { background: transparent; border: 2px solid #f87171; color: #f87171; box-shadow: none; }
+.btn-danger:hover { background: rgba(248,113,113,0.08); color: #f87171; box-shadow: 0 0 15px rgba(248,113,113,0.18); transform: translateY(-2px); }
+
+/* ── SCHEDULE LIST ───────────────────────────────── */
+.schedule-list { width: 100%; display: flex; flex-direction: column; gap: 1.2rem; }
+.schedule-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.4rem 1.8rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 16px; border: 1px solid var(--border); transition: all 0.3s ease;
+}
+.schedule-item.approved { background: rgba(74,222,128,0.04); border-color: rgba(74,222,128,0.18); }
+.schedule-item.cancelled { background: rgba(239,68,68,0.04); border-color: rgba(239,68,68,0.18); }
+.schedule-item:hover { border-color: var(--border-gold); background: rgba(201,168,76,0.03); }
+.schedule-info strong { font-size: 1.25rem; color: var(--text); display: block; margin-bottom: 0.4rem; }
+.schedule-info span { color: var(--text-muted); font-size: 1rem; }
+.badge {
+  padding: 0.4rem 1rem; border-radius: 30px; font-size: 0.85rem;
+  font-weight: 700; margin-left: 1rem; display: inline-block; letter-spacing: 0.5px;
+}
+.badge.ok { background: rgba(74,222,128,0.1); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+.badge.wait { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+.badge.cancel { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
+
+/* ── AVAIL GRID ──────────────────────────────────── */
+.avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem; width: 100%; max-width: 1200px; }
+.avail-col h3 { text-align: center; margin-bottom: 1.2rem; font-size: 1.2rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+.avail-slot {
+  padding: 0.9rem; text-align: center; border-radius: 10px; cursor: pointer;
+  margin-bottom: 0.7rem; transition: all 0.25s ease;
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+  color: #f87171; font-weight: 600; font-size: 0.95rem;
+}
+.avail-slot.free { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.22); color: #4ade80; }
+.avail-slot:hover { transform: scale(1.06); filter: brightness(1.25); }
+.copy-btn {
+  background: none; border: 1px solid var(--border-gold); color: var(--gold);
+  padding: 0.35rem; font-size: 0.75rem; border-radius: 8px; cursor: pointer;
+  margin-top: 0.4rem; transition: all 0.25s ease; width: 100%;
+}
+.copy-btn:hover { background: rgba(201,168,76,0.1); }
+.avail-slot.booked { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #f87171; }
+
+.btn-mini { border-radius: 10px; padding: 0.5rem 0.9rem; font-size: 0.82rem; font-weight: 700; min-width: auto; }
+
+/* ── TOOLTIP ─────────────────────────────────────── */
+.slot-tooltip {
+  position: absolute;
+  background: rgba(14,14,14,0.98);
+  border: 1px solid var(--gold); padding: 0.8rem 1rem; border-radius: 12px;
+  z-index: 10002; display: none; pointer-events: none;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.5), 0 0 15px rgba(201,168,76,0.08);
+  min-width: 160px;
+}
+.slot-tooltip strong { color: var(--gold); display: block; margin-bottom: 0.2rem; }
+.slot-tooltip span { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ── FLATPICKR ────────────────────────────────────── */
+.flatpickr-calendar { background: rgba(16,16,16,0.99) !important; border: 1px solid var(--border-gold) !important; border-radius: 20px !important; box-shadow: 0 20px 50px rgba(0,0,0,0.55), 0 0 30px rgba(201,168,76,0.08) !important; font-family: 'Heebo', sans-serif !important; color: var(--text) !important; }
+.flatpickr-day { color: var(--text) !important; border-radius: 50% !important; transition: 0.2s; }
+.flatpickr-day.selected { background: linear-gradient(135deg, var(--gold), #a07828) !important; border-color: var(--gold) !important; color: #fff !important; font-weight: 800 !important; box-shadow: 0 0 15px var(--glow); }
+.flatpickr-day.today { border: 2px solid var(--gold) !important; color: var(--gold) !important; }
+.flatpickr-day:hover { background: rgba(201,168,76,0.12) !important; }
+.flatpickr-months .flatpickr-month { color: var(--text) !important; fill: var(--text) !important; }
+.flatpickr-current-month .flatpickr-monthDropdown-months { background: rgba(16,16,16,0.9) !important; color: var(--text) !important; }
+.flatpickr-weekdays { background: transparent !important; }
+.flatpickr-weekday { color: var(--gold) !important; font-weight: 600 !important; }
+.flatpickr-innerContainer { padding: 12px !important; }
+.flatpickr-months .flatpickr-prev-month, .flatpickr-months .flatpickr-next-month { padding: 10px !important; }
+.flatpickr-months .flatpickr-prev-month svg, .flatpickr-months .flatpickr-next-month svg { fill: var(--gold) !important; width: 14px; height: 14px; }
+
+/* ── INPUT WRAPPER WITH ICON ─────────────────────── */
+.input-wrapper { position: relative; width: 100%; display: flex; align-items: center; }
+.input-wrapper input { padding-right: 3.5rem !important; }
+.input-icon { position: absolute; right: 1.2rem; width: 20px; height: 20px; stroke: var(--gold); fill: none; pointer-events: none; opacity: 0.7; }
+
+/* ── PREMIUM TOAST – top center ──────────────────── */
+#toast-container {
+  position: fixed; top: 5.2rem; left: 50%; transform: translateX(-50%);
+  z-index: 10001; display: flex; flex-direction: column; align-items: center;
+  gap: 0.6rem; pointer-events: none;
+}
+.toast {
+  background: rgba(10,10,10,0.97);
+  border: 1px solid var(--border-gold); color: var(--text);
+  padding: 0.85rem 2rem; border-radius: 50px;
+  font-size: 0.95rem; font-weight: 600; display: flex; align-items: center; gap: 0.75rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 22px rgba(201,168,76,0.08);
+  animation: toastIn 0.45s cubic-bezier(0.18,0.89,0.32,1.28) forwards, toastOut 0.4s 2.9s ease forwards;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--gold);
+}
+/* ── PREMIUM CONFIRM MODAL ───────────────────────── */
+#confirm-modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.82);
+  z-index: 10005; display: none; align-items: center; justify-content: center;
+}
+.confirm-box {
+  background: rgba(14,14,14,0.99);
+  border: 1px solid var(--border-gold);
+  border-bottom: 2px solid var(--gold);
+  border-radius: 22px;
+  padding: 2.2rem 2.5rem;
+  max-width: 420px; width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.65), 0 0 30px rgba(201,168,76,0.08);
+  animation: confirmIn 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+@keyframes confirmIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#confirm-msg {
+  font-size: 1.1rem; color: var(--text); margin-bottom: 1.8rem;
+  line-height: 1.7; font-weight: 500;
+}
+.confirm-actions { display: flex; gap: 1rem; justify-content: center; }
+.toast-icon {
+  width: 22px; height: 22px;
+  background: linear-gradient(135deg, var(--gold), #a07828);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: #000; flex-shrink: 0; font-weight: 900;
+}
+@keyframes toastIn { from { transform: translateY(-22px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-16px); } }
+
+/* ── PREMIUM LESSON TICKETS ──────────────────────── */
+.appointment-ticket {
+  position: relative; display: flex; align-items: stretch;
+  border-radius: 16px; overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.appointment-ticket.approved {
+  background: rgba(20,17,8,0.72);
+  border: 1.5px solid rgba(201,168,76,0.45);
+  box-shadow: 0 4px 24px rgba(201,168,76,0.07), inset 0 0 30px rgba(201,168,76,0.02);
+}
+.appointment-ticket.pending {
+  background: rgba(18,15,6,0.68);
+  border: 1.5px dashed rgba(251,191,36,0.38);
+}
+.appointment-ticket.cancelled {
+  background: rgba(14,10,10,0.62);
+  border: 1px solid rgba(239,68,68,0.22);
+  opacity: 0.72;
+}
+.appointment-ticket:hover { transform: translateY(-3px); box-shadow: 0 14px 35px rgba(0,0,0,0.45); }
+.ticket-stripe { width: 5px; flex-shrink: 0; }
+.appointment-ticket.approved .ticket-stripe { background: linear-gradient(180deg, var(--gold), #7a5a20); }
+.appointment-ticket.pending .ticket-stripe { background: repeating-linear-gradient(180deg, #fbbf24 0, #fbbf24 7px, transparent 7px, transparent 13px); }
+.appointment-ticket.cancelled .ticket-stripe { background: #f87171; }
+.ticket-body {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 1.5rem; flex: 1; gap: 1.2rem;
+}
+.ticket-left { display: flex; flex-direction: column; gap: 0.2rem; min-width: 85px; }
+.ticket-date { font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.3px; }
+.ticket-time { font-size: 1.65rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 18px rgba(201,168,76,0.28); line-height: 1.1; }
+.ticket-divider { width: 1px; align-self: stretch; background: var(--border); margin: 0 0.4rem; }
+.ticket-right { flex: 1; display: flex; flex-direction: column; gap: 0.3rem; text-align: right; }
+.ticket-topic { font-size: 1rem; font-weight: 700; color: var(--text); }
+.ticket-grade { font-size: 0.85rem; color: var(--text-muted); }
+.ticket-badge-wrap { display: flex; align-items: center; flex-shrink: 0; }
+.ticket-footer { padding: 0.55rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: flex-end; }
+.cancel-appointment-btn { font-size: 0.78rem; color: rgba(248,113,113,0.7); background: none; border: none; cursor: pointer; transition: color 0.2s; letter-spacing: 0.2px; padding: 0; }
+.cancel-appointment-btn:hover { color: #f87171; }
+
+/* ── RESPONSIVE ──────────────────────────────────── */
+@media (max-width: 900px) {
+  h1 { font-size: 3rem; }
+  .stats { flex-direction: column; }
+  .avail-grid { grid-template-columns: 1fr; overflow-x: auto; gap: 2rem; }
+  nav { padding: 1rem 1.5rem; }
+  nav .logo { font-size: 1.2rem; margin-bottom: 0.2rem; }
+  .schedule-item { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+  .ticket-body { flex-wrap: wrap; }
+  .ticket-divider { display: none; }
+}
+
+/* ── MOBILE (max 600px) ──────────────────────────── */
+@media (max-width: 600px) {
+  section { padding: 5rem 1.2rem; }
+
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.9rem; margin-bottom: 2rem; }
+
+  .btn {
+    font-size: 1rem; padding: 0.95rem 1.6rem;
+    white-space: normal; word-break: keep-all;
+  }
+  .btn-sm { font-size: 0.88rem; padding: 0.7rem 1.1rem; }
+
+  .glass { padding: 1.5rem 1.2rem; }
+
+  input, select, textarea { font-size: 1rem; padding: 1rem; }
+  label { font-size: 0.95rem; }
+
+  .stats { gap: 1.2rem; margin-top: 2.5rem; }
+  .stats .glass span { font-size: 2.5rem; }
+  .stats .glass { font-size: 1.1rem; padding: 1.2rem; }
+
+  .bar-ilan-badge { font-size: 0.95rem; padding: 6px 18px; }
+
+  .progress { margin-bottom: 2rem; }
+  .dot { width: 36px; height: 36px; font-size: 0.95rem; }
+
+  .chips { gap: 0.6rem; }
+  .chip { padding: 0.55rem 1rem; font-size: 0.9rem; }
+
+  .grid { grid-template-columns: repeat(3, 1fr); gap: 0.7rem; }
+  .time-slot { padding: 0.9rem 0.5rem; font-size: 1rem; }
+
+  .ticket-body { padding: 1rem; gap: 0.8rem; }
+  .ticket-time { font-size: 1.3rem; }
+
+  .actions { flex-wrap: wrap; gap: 0.8rem; justify-content: center !important; }
+  .actions .btn { flex: 1; min-width: 120px; text-align: center; }
+
+  .auth-btn-row { flex-direction: column; }
+  .auth-btn-row .btn { width: 100%; }
+
+  #profileSummaryBar { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+
+  #my-appointments .glass { padding: 1.2rem 1rem; }
+}
+
+/* ── THEME TOGGLE ────────────────────────────────── */
+.theme-btn {
+  background: none; border: 1px solid var(--border-gold); color: var(--gold);
+  cursor: pointer; transition: all 0.3s ease; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 50%;
+}
+.theme-btn:hover { background: rgba(201,168,76,0.1); transform: scale(1.1) rotate(15deg); }
+.theme-btn svg { width: 18px; height: 18px; stroke: var(--gold); stroke-width: 2.5; }
+
+/* ── AUTH MODAL ──────────────────────────────────── */
+#auth-modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.88);
+  z-index: 1000; display: none; align-items: center; justify-content: center;
+}
+#auth-modal .glass {
+  max-width: 400px; width: 90%; text-align: center;
+  transition: none !important;
+  background: rgba(14,14,14,0.99) !important;
+  border: 1.5px solid var(--border-gold);
+  border-radius: 22px;
+}
+#auth-modal input {
+  transition: none !important; box-shadow: none !important;
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); padding: 1rem; margin-bottom: 1rem;
+}
+#auth-modal input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(201,168,76,0.12) !important; }
+#auth-modal .btn-cancel { background: transparent; border: 1px solid var(--border-gold); color: var(--gold); margin-top: 0.5rem; }
+
+/* ── FLOATING CONTACT ────────────────────────────── */
+#floatingContact {
+  position: fixed; bottom: 1.6rem; left: 1.6rem;
+  z-index: 999;
+  background: rgba(12,12,12,0.96);
+  border: 1px solid var(--border-gold);
+  border-radius: 50px;
+  padding: 0.65rem 1.2rem;
+  display: flex; align-items: center; gap: 0.7rem;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 18px rgba(201,168,76,0.08);
+  transition: box-shadow 0.3s, transform 0.3s, border-color 0.3s;
+  cursor: pointer;
+  text-decoration: none;
+}
+#floatingContact:hover {
+  box-shadow: 0 10px 40px rgba(0,0,0,0.55), 0 0 30px rgba(201,168,76,0.28);
+  border-color: rgba(201,168,76,0.55);
+  transform: translateY(-3px) scale(1.03);
+}
+#floatingContact .fc-label {
+  font-size: 0.82rem; color: var(--text-muted); font-weight: 500; white-space: nowrap;
+}
+#floatingContact .fc-number {
+  font-size: 0.95rem; font-weight: 800; color: var(--gold);
+  letter-spacing: 0.5px; white-space: nowrap;
+}
+#floatingContact .fc-copy {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 6px; transition: background 0.2s;
+  flex-shrink: 0;
+}
+#floatingContact .fc-copy:hover { background: rgba(201,168,76,0.15); }
+#floatingContact .fc-copy svg { width: 16px; height: 16px; fill: var(--gold); stroke: none; }
+@media (max-width: 900px) {
+  #floatingContact {
+    bottom: 1rem; left: 50%; transform: translateX(-50%);
+    padding: 0.55rem 1rem;
+  }
+  #floatingContact:hover { transform: translateX(-50%) translateY(-2px); }
+  #floatingContact .fc-label { display: none; }
+}
+
+/* ── NAV AUTH BUTTONS ────────────────────────────── */
+.nav-auth { display: flex; align-items: center; gap: 0.6rem; }
+.nav-auth .btn { padding: 0.45rem 1rem; font-size: 0.82rem; border-radius: 10px; }
+#navUserChip { display: none; align-items: center; gap: 0.5rem; color: var(--gold); font-weight: 700; font-size: 0.9rem; cursor: pointer; padding: 0.35rem 0.8rem; border: 1px solid var(--border-gold); border-radius: 20px; transition: background 0.2s; }
+#navUserChip:hover { background: rgba(201,168,76,0.08); }
+@media (max-width: 900px) { .nav-auth { display: none; } }
+
+/* ── PROFILE SUMMARY BAR (step 1) ────────────────── */
+#profileSummaryBar {
+  background: rgba(201,168,76,0.07); border: 1px solid var(--border-gold);
+  border-radius: 12px; padding: 0.9rem 1.4rem; margin-bottom: 1.5rem;
+  display: none; align-items: center; justify-content: space-between; gap: 1rem;
+}
+#profileSummaryBar .psb-name { color: var(--gold); font-weight: 800; }
+#profileSummaryBar .psb-phone { color: var(--text-muted); font-size: 0.85rem; }
+
+/* ── STUDENT AUTH MODAL ──────────────────────────── */
+#client-auth-modal {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.82);
+  z-index: 10005; display: none; align-items: center; justify-content: center;
+}
+
+/* ── AUTH SCREEN ─────────────────────────────────── */
+#authButtons { text-align: center; }
+.auth-btn-row { display: flex; gap: 1rem; margin-top: 0.5rem; }
+.auth-btn-row .btn { flex: 1; }
+#loginForm, #registerForm {
+  animation: fadeSlide 0.3s ease;
+}
+.auth-back-btn {
+  width: 100%; margin-top: 0.6rem;
+  font-size: 0.85rem; opacity: 0.65;
+}
+#loggedInChip {
+  background: rgba(201,168,76,0.07);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px; padding: 1.1rem 1.5rem;
+  margin-bottom: 1.5rem; display: none;
+  align-items: center; justify-content: space-between; gap: 1rem;
+  animation: fadeSlide 0.4s ease;
+}
+.profile-chip-name { color: var(--gold); font-weight: 800; font-size: 1.05rem; }
+.profile-chip-phone { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.2rem; }
+input.field-locked {
+  border-color: var(--border-gold) !important;
+  background: rgba(201,168,76,0.04) !important;
+  color: var(--gold) !important; cursor: default;
+}
+.unlock-link {
+  font-size: 0.78rem; color: var(--text-muted); cursor: pointer;
+  text-decoration: underline; margin-top: 0.3rem; display: inline-block;
+  transition: color 0.2s;
+}
+.unlock-link:hover { color: var(--gold); }
+
+/* ── STUDENT AREA ENHANCEMENTS ───────────────────── */
+#welcomeBanner {
+  background: rgba(201,168,76,0.07);
+  border: 1px solid var(--border-gold);
+  border-radius: 14px; padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem; display: none;
+  text-align: center; animation: fadeSlide 0.5s ease;
+}
+.welcome-name { color: var(--gold); font-weight: 800; }
+.badge-soon {
+  background: linear-gradient(135deg, var(--gold), #a07828);
+  color: #000; font-size: 0.72rem; font-weight: 800;
+  padding: 0.18rem 0.65rem; border-radius: 20px;
+  letter-spacing: 0.5px; vertical-align: middle;
+  margin-left: 0.4rem; display: inline-block;
+}
+.appointment-ticket.upcoming {
+  border: 1.5px solid rgba(201,168,76,0.6) !important;
+  box-shadow: 0 0 22px rgba(201,168,76,0.12) !important;
+}
+.gcal-link {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  font-size: 0.76rem; color: var(--gold); text-decoration: none;
+  font-weight: 600; padding: 0.28rem 0.65rem;
+  border: 1px solid var(--border-gold); border-radius: 20px;
+  transition: background 0.2s; margin-top: 0.5rem; white-space: nowrap;
+}
+.gcal-link:hover { background: rgba(201,168,76,0.1); }
+.btn-whatsapp {
+  background: linear-gradient(135deg, #25D366, #128C7E) !important;
+  color: #fff !important; display: flex; align-items: center;
+  justify-content: center; gap: 0.6rem;
+}
+.btn-whatsapp:hover {
+  background: linear-gradient(135deg, #2eef72, #25D366) !important;
+  box-shadow: 0 8px 28px rgba(37,211,102,0.3) !important;
+  transform: translateY(-3px) scale(1.02) !important;
+}
+
+/* ── BAR-ILAN BADGE ──────────────────────────────── */
+.bar-ilan-badge {
+  background: rgba(201,168,76,0.07);
+  border: 1px solid rgba(201,168,76,0.32);
+  color: var(--gold); padding: 7px 26px; border-radius: 50px;
+  font-weight: 600; margin-top: 1.5rem; display: inline-block;
+  box-shadow: 0 0 22px rgba(201,168,76,0.12);
+  animation: slideDown 1s 0.2s ease forwards; opacity: 0; font-size: 1.15rem;
+}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<nav id="navbar">
+    <div style="display:flex; align-items:center; gap:1.2rem;">
+    <div class="logo" id="adminTrigger">נחשון Barber</div>
+    <div class="nav-auth" id="navAuth">
+        <div id="navAuthButtons" style="display:flex; gap:0.6rem;">
+            <button class="btn btn-outline nav-auth-btn" onclick="navShowLogin()">התחברות</button>
+            <button class="btn nav-auth-btn" onclick="navShowRegister()">הרשמה</button>
+        </div>
+        <div id="navUserChip" onclick="closeMenuAndOpenClientArea()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span id="navUserName"></span>
+        </div>
+    </div>
+    </div>
+    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+    </div>
+    <div class="sidebar-menu" id="sidebarMenu">
+        <button id="themeToggle" class="theme-btn" onclick="toggleTheme()"></button>
+        <a href="#hero" onclick="closeMenuAndLogoutAdmin()" id="navHome">ראשי</a>
+        <a href="#book" onclick="closeMenuAndLogoutAdmin()" id="navBook">קביעת תור</a>
+        <a href="javascript:void(0)" onclick="closeMenuAndOpenClientArea()" id="navAppointments">התורים שלי</a>
+        <a href="javascript:void(0)" onclick="sidebarLogout()" id="navLogout" style="display:none; color:#f87171;">התנתק</a>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
+</nav>
+
+<section id="hero" style="overflow: hidden;">
+    <h1>נחשון Barber</h1>
+
+    <a href="#book" class="btn" style="margin-top: 2.5rem; opacity: 0; animation: slideUp 1s 0.8s ease forwards;">קבע תור עכשיו</a>
+
+    <div class="stats">
+        <div class="glass"><span>100%</span>לקוחות מרוצים</div>
+        <div class="glass"><span>30₪</span>מחיר לתספורת</div>
+        <div class="glass"><span>3+</span>שנות נסיון</div>
+    </div>
+</section>
+
+<!-- PUBLIC BOOKING SECTION -->
+<section id="book">
+    <h2>הזמנת תור חדש</h2>
+    <div class="glass form-container">
+        <div class="progress">
+            <div class="progress-fill" id="progressFill"></div>
+            <div class="dot active" onclick="goToStep(1)">1</div>
+            <div class="dot" onclick="goToStep(2)">2</div>
+            <div class="dot" onclick="goToStep(3)">3</div>
+        </div>
+
+        <div id="step1" class="step active">
+            <!-- Profile summary: shown when logged in -->
+            <div id="profileSummaryBar">
+                <div>
+                    <div class="psb-name" id="psbName"></div>
+                    <div class="psb-phone" id="psbPhone"></div>
+                </div>
+                <span class="unlock-link" onclick="switchUser()">החלף משתמש</span>
+            </div>
+            <!-- Identity fields: hidden when logged in -->
+            <div id="step1IdentityFields">
+                <div class="input-group">
+                    <label>שם מלא</label>
+                    <input type="text" id="fname" placeholder="ישראל ישראלי">
+                </div>
+                <div class="input-group">
+                    <label>מספר טלפון</label>
+                    <input type="tel" id="fphone" placeholder="050-0000000">
+                </div>
+            </div>
+            <div class="actions" style="justify-content: center; gap: 20px;">
+                <button class="btn btn-sm" onclick="nextStep(2)">המשך לשלב הבא</button>
+            </div>
+        </div>
+
+        <div id="step2" class="step">
+            <div class="input-group">
+                <label>בחר שירות</label>
+                <div class="chips" id="topicChips">
+                    <p style="color:rgba(255,255,255,0.4); font-size:0.95rem">אנא בחר רמה כדי לראות נושאים...</p>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>הערות נוספות</label>
+                <textarea id="fcomments" rows="3" placeholder="כאן אפשר לכתוב נושאים ספציפיים לתור, שאלות או בקשות מיוחדות..."></textarea>
+            </div>
+            <div class="actions" style="justify-content: center; gap: 20px;">
+                <button class="btn btn-sm btn-outline" onclick="nextStep(1)">חזור</button>
+                <button class="btn btn-sm" onclick="nextStep(3)">המשך לבחירת מועד</button>
+            </div>
+        </div>
+
+        <div id="step3" class="step">
+            <div class="input-group">
+                <label>תאריך מבוקש</label>
+                <div class="input-wrapper">
+                    <input type="text" id="fdate" placeholder="בחר תאריך..." readonly>
+                    <svg class="input-icon" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                </div>
+            </div>
+            <div class="input-group">
+                <label>שעה פנויה</label>
+                <p id="timeHelp" style="color:var(--gold); font-size:0.9rem; margin-bottom: 1rem; display: none;">בחר שעה פנויה:</p>
+                <div class="grid" id="timeGrid" style="display: none;">
+                    <div class="time-slot" onclick="selectTime(this)">15:00</div>
+                    <div class="time-slot" onclick="selectTime(this)">15:00</div>
+                    <div class="time-slot" onclick="selectTime(this)">16:00</div>
+                    <div class="time-slot" onclick="selectTime(this)">17:00</div>
+                    <div class="time-slot" onclick="selectTime(this)">18:00</div>
+                    <div class="time-slot" onclick="selectTime(this)">19:00</div>
+                    <div class="time-slot" onclick="selectTime(this)">20:00</div>
+                </div>
+            </div>
+
+            <div id="bookingSummary" class="glass no-hover" style="margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--gold); border-radius: 16px; text-align: center; display: none;">
+                <h4 style="color: var(--gold); margin-bottom: 1rem; font-size: 1.2rem;">סיכום הזמנה</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 1.1rem;">
+                    <div style="color: var(--text);">תאריך: <span id="summaryDate" style="font-weight: 600; color: var(--gold); margin-right: 5px;">-</span></div>
+                    <div style="color: var(--text);">שעה: <span id="summaryTime" style="font-weight: 600; color: var(--gold); margin-right: 5px;">-</span></div>
+                    <div style="margin-top: 0.5rem; font-size: 1.3rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 10px var(--glow);">עלות תור: 30 ₪</div>
+                </div>
+            </div>
+
+            <div class="actions" style="justify-content: center; gap: 20px;">
+                <button class="btn btn-sm btn-outline" onclick="nextStep(2)">חזור</button>
+                <button class="btn btn-sm" id="submitBtn" onclick="confirmBooking()">סיים וקבע תור</button>
+            </div>
+            <div id="formError" style="color: #f87171; text-align: center; margin-top: 1rem; display: none; font-weight: bold;"></div>
+        </div>
+
+        <div id="success" class="step">
+            <h3 style="color: #4ade80;">התור מופיע בגוגל קלנדר שלך 🎉</h3>
+            <button class="btn" style="margin-top: 2rem;" onclick="resetForm()">📅 קבע עוד תור</button>
+        </div>
+    </div>
+</section>
+
+<section id="my-appointments" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 2000; background: var(--bg); overflow-y: auto;">
+    <div style="width: 100%; max-width: 800px; padding: 4rem 2rem; margin: 0 auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3rem;">
+            <div style="display:flex; align-items:center; gap: 1rem;">
+                <h2 style="margin-bottom: 0;">התורים שלי</h2>
+                <button id="refreshClientBtn" class="theme-btn" onclick="fetchMyAppointments()" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                </button>
+            </div>
+            <button class="btn btn-sm btn-outline" onclick="logoutClient()">חזרה לדף הבית</button>
+        </div>
+
+        <div class="glass form-container" style="max-width: 600px; margin: 0 auto;">
+            <div id="welcomeBanner"></div>
+            <div id="loginArea">
+                <!-- Logged-in chip: shown when profile exists in localStorage -->
+                <div id="loggedInChip">
+                    <div>
+                        <div class="profile-chip-name" id="loggedInName"></div>
+                        <div class="profile-chip-phone" id="loggedInPhone"></div>
+                    </div>
+                    <button class="btn btn-outline" onclick="logoutProfile()" style="padding: 0.5rem 1rem; font-size: 0.82rem; white-space: nowrap;">התנתק / החלף משתמש</button>
+                </div>
+                <!-- Auth buttons: entry point when no profile -->
+                <div id="authButtons">
+                    <p style="margin-bottom: 1.5rem; text-align: center; opacity: 0.8;">כדי לצפות בתורים שלך, התחבר או הירשם:</p>
+                    <div class="auth-btn-row">
+                        <button class="btn" onclick="showLoginForm()">התחברות</button>
+                        <button class="btn btn-outline" onclick="showRegisterForm()">הרשמה</button>
+                    </div>
+                </div>
+                <!-- Login form: phone only -->
+                <div id="loginForm" style="display:none;">
+                    <p style="margin-bottom: 1.5rem; text-align: center; opacity: 0.8;">הזן את מספר הטלפון שלך:</p>
+                    <div class="input-group">
+                        <label>מספר טלפון</label>
+                        <input type="tel" id="loginPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') submitLogin()">
+                    </div>
+                    <button class="btn" onclick="submitLogin()" style="width:100%; margin-top:1rem;">כניסה</button>
+                    <button class="btn btn-outline auth-back-btn" onclick="showAuthButtons()">חזרה</button>
+                </div>
+                <!-- Register form: name + phone -->
+                <div id="registerForm" style="display:none;">
+                    <p style="margin-bottom: 1.5rem; text-align: center; opacity: 0.8;">הרשמה ראשונה — מלא את הפרטים:</p>
+                    <div class="input-group">
+                        <label>שם מלא</label>
+                        <input type="text" id="regName" placeholder="ישראל ישראלי" onkeydown="if(event.key==='Enter') document.getElementById('regPhone').focus()">
+                    </div>
+                    <div class="input-group" style="margin-top:1rem;">
+                        <label>מספר טלפון</label>
+                        <input type="tel" id="regPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') document.getElementById('regEmail').focus()">
+                    </div>
+                    <div class="input-group" style="margin-top:1rem;">
+                        <label>כתובת אימייל (לתזכורות)</label>
+                        <input type="email" id="regEmail" placeholder="example@email.com" onkeydown="if(event.key==='Enter') submitRegister()">
+                    </div>
+                    <button class="btn" onclick="submitRegister()" style="width:100%; margin-top:1rem;">הרשמה והתחברות</button>
+                    <button class="btn btn-outline auth-back-btn" onclick="showAuthButtons()">חזרה</button>
+                </div>
+            </div>
+            <div id="appointmentsResult" style="display: none; margin-top: 1rem;">
+                <div id="appointmentsList" style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; padding: 0.5rem;">
+                    <!-- Appointments will appear here -->
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.5rem;">
+                    <a href="https://wa.me/972586458414?text=%D7%94%D7%99%D7%99%20%D7%92%D7%91%D7%90%D7%99%2C%20%D7%90%D7%A0%D7%99%20%D7%A4%D7%95%D7%A0%D7%94%20%D7%90%D7%9C%D7%99%D7%9A%20%D7%9E%D7%94%D7%90%D7%AA%D7%A8%20%D7%9C%D7%92%D7%91%D7%99%20%D7%94%D7%A9%D7%99%D7%A2%D7%95%D7%A8%20%D7%A9%D7%9C%D7%99..." target="_blank" class="btn btn-whatsapp" style="width:100%; text-decoration:none; font-size:1rem; padding: 0.9rem;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                        שלח לי וואטסאפ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ADMIN DASHBOARD (Hidden by default) -->
+<section id="adminDashboard" style="display:none;">
+    <div style="width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem;">
+        <h2 style="margin-bottom: 0;">לוח בקרה למנהל</h2>
+        <button class="btn" style="padding: 0.8rem 1.5rem; font-size: 1rem;" onclick="logoutAdmin()">יציאה מניהול</button>
+    </div>
+    <div style="width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 3rem;">
+
+        <div class="glass no-hover">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                <h3 style="margin:0;">רשימת תורים</h3>
+                <div style="display:flex; gap: 1rem;">
+                    <button class="btn btn-sm btn-outline" onclick="approveAllBookings()">אשר את כל התורים</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCancelledBookings()">מחק את כל התורים המבוטלים</button>
+                </div>
+            </div>
+            <div class="schedule-list" id="adminBookingsList">
+                <!-- Bookings injected here -->
+            </div>
+        </div>
+
+        <div class="glass no-hover">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+                <h3 style="margin:0;">תצוגת יומן שבועית</h3>
+                <div style="display:flex; gap: 0.8rem;">
+                    <button class="btn btn-sm btn-outline" onclick="changeWeek(-1)">השבוע הקודם</button>
+                    <button class="btn btn-sm btn-outline" onclick="changeWeek(0)">חזרה להיום</button>
+                    <button class="btn btn-sm btn-outline" onclick="changeWeek(1)">השבוע הבא</button>
+                </div>
+            </div>
+            <div class="avail-grid" id="adminAvailGrid">
+                <div class="avail-col"><h3>ראשון</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+                <div class="avail-col"><h3>שני</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+                <div class="avail-col"><h3>שלישי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+                <div class="avail-col"><h3>רביעי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+                <div class="avail-col"><h3>חמישי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+                <div class="avail-col"><h3>שישי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+                <div class="avail-col"><h3>שבת</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
+            </div>
+            <button class="btn btn-mini" style="margin-top: 2rem;" onclick="showToast('הזמינות עודכנה!')">שמור זמינות</button>
+        </div>
+
+    </div>
+</section>
+
+<div id="auth-modal">
+    <div class="glass">
+        <h3 style="margin-bottom: 1.5rem; font-size: 2rem;">כניסת מנהל</h3>
+        <div style="position: relative; margin: 1.5rem 0;">
+            <input type="password" id="adminPass" placeholder="הכנס סיסמה..." style="width:100%; padding-left: 3rem; margin-bottom: 0;" onkeydown="if(event.key==='Enter') loginAdmin()">
+            <span onclick="togglePass()" style="position:absolute; left:1rem; top:50%; transform:translateY(-50%); cursor:pointer; font-size:1.3rem;">👁</span>
+        </div>
+        <div style="display:flex; flex-direction: column; gap: 0.8rem;">
+            <button class="btn" style="width: 100%;" onclick="loginAdmin()">היכנס</button>
+            <button class="btn btn-cancel" style="width: 100%;" onclick="document.getElementById('auth-modal').style.display='none'">ביטול</button>
+        </div>
+    </div>
+</div>
+
+<div id="confirm-modal">
+    <div class="confirm-box">
+        <p id="confirm-msg"></p>
+        <div class="confirm-actions">
+            <button class="btn btn-sm" id="confirm-ok">אשר</button>
+            <button class="btn btn-sm btn-outline" id="confirm-cancel">ביטול</button>
+        </div>
+    </div>
+</div>
+
+<div id="client-auth-modal" onclick="if(event.target===this) closeClientAuthModal()">
+    <div class="confirm-box" style="max-width:440px; width:92%; text-align:right; padding:2rem 2.2rem;">
+        <!-- Login panel -->
+        <div id="modal-login-panel">
+            <h3 style="color:var(--gold); margin-bottom:1.8rem; font-size:1.6rem;">התחברות</h3>
+            <div class="input-group">
+                <label>מספר טלפון</label>
+                <input type="tel" id="modalLoginPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') modalSubmitLogin()">
+            </div>
+            <button class="btn" onclick="modalSubmitLogin()" style="width:100%; margin-top:0.5rem;">כניסה</button>
+            <p style="text-align:center; margin-top:1.2rem; font-size:0.9rem; opacity:0.7;">אין לך חשבון? <span onclick="showModalRegister()" style="color:var(--gold); cursor:pointer; text-decoration:underline;">הירשם כאן</span></p>
+            <button class="btn btn-outline" onclick="closeClientAuthModal()" style="width:100%; margin-top:0.8rem; font-size:0.85rem; opacity:0.65;">סגור</button>
+        </div>
+        <!-- Register panel -->
+        <div id="modal-register-panel" style="display:none;">
+            <h3 style="color:var(--gold); margin-bottom:1.8rem; font-size:1.6rem;">הרשמה</h3>
+            <div class="input-group">
+                <label>שם מלא</label>
+                <input type="text" id="modalRegName" placeholder="ישראל ישראלי" onkeydown="if(event.key==='Enter') document.getElementById('modalRegPhone').focus()">
+            </div>
+            <div class="input-group">
+                <label>מספר טלפון</label>
+                <input type="tel" id="modalRegPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') document.getElementById('modalRegEmail').focus()">
+            </div>
+            <div class="input-group">
+                <label>כתובת אימייל לתזכורות</label>
+                <input type="email" id="modalRegEmail" placeholder="example@email.com" onkeydown="if(event.key==='Enter') modalSubmitRegister()">
+            </div>
+            <button class="btn" onclick="modalSubmitRegister()" style="width:100%; margin-top:0.5rem;">הרשמה</button>
+            <p style="text-align:center; margin-top:1.2rem; font-size:0.9rem; opacity:0.7;">כבר רשום? <span onclick="showModalLogin()" style="color:var(--gold); cursor:pointer; text-decoration:underline;">התחבר כאן</span></p>
+            <button class="btn btn-outline" onclick="closeClientAuthModal()" style="width:100%; margin-top:0.8rem; font-size:0.85rem; opacity:0.65;">סגור</button>
+        </div>
+    </div>
+</div>
+
+<a id="floatingContact" href="https://wa.me/972586458414" target="_blank" rel="noopener noreferrer">
+    <span class="fc-label">לשאלות פנו אליי:</span>
+    <span class="fc-number">058-6458414</span>
+    <span class="fc-copy" title="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 2.126.554 4.122 1.526 5.857L.057 23.882a.5.5 0 0 0 .614.612l6.094-1.478A11.955 11.955 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.891 0-3.666-.523-5.184-1.434l-.372-.22-3.862.936.975-3.773-.243-.389A9.956 9.956 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
+        </svg>
+    </span>
+</a>
+
+<div id="toast-container"></div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAIe7etcaWnB2Sco2G3WBt-M-f8-i_i_zI",
+  authDomain: "gabaymath.firebaseapp.com",
+  projectId: "gabaymath",
+  storageBucket: "gabaymath.firebasestorage.app",
+  messagingSenderId: "862656886301",
+  appId: "1:862656886301:web:a49945b73066023dc54374",
+  measurementId: "G-QJC05YG855"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+const CLIENT_ID = '214964095575-gyhepg783bst139k1kcrolrp7qjpam9f.apps.googleusercontent.com';
+
+
+if (history.scrollRestoration) history.scrollRestoration = 'manual';
+window.scrollTo(0, 0);
+
+let currentWeekOffset = 0;
+function changeWeek(offset) {
+    if (offset === 0) currentWeekOffset = 0;
+    else currentWeekOffset += offset;
+    renderAvailGrid();
+}
+
+const MOON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+const SUN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+
+let tokenClient;
+window.onload = function() {
+    updateTopics('');
+    const btn = document.getElementById('themeToggle');
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.add('light-mode');
+        btn.innerHTML = SUN_SVG;
+    } else {
+        btn.innerHTML = MOON_SVG;
+    }
+    if (window.google) {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: CLIENT_ID,
+            scope: 'https://www.googleapis.com/auth/calendar.events',
+            callback: (tokenResponse) => {
+                console.log('OAuth Token Response:', tokenResponse);
+            },
+        });
+    }
+
+    // Pre-fill and lock booking form if profile exists
+    applyProfileToBookingForm();
+    updateNavAuth();
+
+    flatpickr("#fdate", {
+        locale: "he",
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        disableMobile: "true",
+        prevArrow: '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>',
+        nextArrow: '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>',
+        onChange: function(selectedDates, dateStr) {
+            checkAvailability(dateStr);
+            updateBookingSummary();
+        }
+    });
+
+    // Enter-key chain: Name → Phone → Email → Next
+    document.getElementById('fname').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('fphone').focus(); }
+    });
+    document.getElementById('fphone').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('femail').focus(); }
+    });
+    document.getElementById('femail').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); nextStep(2); }
+    });
+
+    // Nav active state on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = { 'hero': 'navHome', 'book': 'navBook' };
+    const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                document.querySelectorAll('nav a').forEach(a => a.classList.remove('nav-active'));
+                const linkId = navLinks[entry.target.id];
+                if (linkId) document.getElementById(linkId).classList.add('nav-active');
+            }
+        });
+    }, { threshold: 0.4 });
+    sections.forEach(s => scrollObserver.observe(s));
+};
+
+function updateBookingSummary() {
+    const summaryCard = document.getElementById('bookingSummary');
+    const summaryDate = document.getElementById('summaryDate');
+    const summaryTime = document.getElementById('summaryTime');
+    const dateInput = document.getElementById('fdate').value;
+    const timeSlot = document.querySelector('.time-slot.selected');
+
+    if (dateInput || timeSlot) {
+        summaryCard.style.display = 'block';
+        summaryDate.innerText = dateInput || '-';
+        summaryTime.innerText = timeSlot ? timeSlot.innerText : '-';
+    } else {
+        summaryCard.style.display = 'none';
+    }
+}
+
+    emailjs.init({publicKey: "JI7HdPnpg063aq0Pl", blockHeadless: false});
+
+    // Intersection Observer for Section Animations
+    const observerOptions = { threshold: 0.1 };
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('reveal');
+            }
+        });
+    }, observerOptions);
+    document.querySelectorAll('section').forEach(sec => observer.observe(sec));
+
+function toggleTheme() {
+    const body = document.body;
+    const btn = document.getElementById('themeToggle');
+    body.classList.toggle('light-mode');
+    if (body.classList.contains('light-mode')) {
+        btn.innerHTML = SUN_SVG;
+        localStorage.setItem('theme', 'light');
+    } else {
+        btn.innerHTML = MOON_SVG;
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+const _navbar = document.getElementById('navbar');
+let _scrollTicking = false;
+window.addEventListener('scroll', () => {
+    if (!_scrollTicking) {
+        requestAnimationFrame(() => {
+            _navbar.style.padding = window.scrollY > 50 ? '0.7rem 2rem' : '1rem 2rem';
+            _scrollTicking = false;
+        });
+        _scrollTicking = true;
+    }
+}, { passive: true });
+
+let maxReachedStep = 1;
+function nextStep(s) {
+    if (s > maxReachedStep) maxReachedStep = s;
+    document.querySelectorAll('.step').forEach(e => e.classList.remove('active'));
+    document.getElementById('step' + s).classList.add('active');
+    document.querySelectorAll('.dot').forEach((e, i) => {
+        if (i < s) e.classList.add('active'); else e.classList.remove('active');
+    });
+    // Update progress fill bar
+    const fill = document.getElementById('progressFill');
+    if (fill) fill.style.width = ((s - 1) / 2 * 100) + '%';
+}
+
+function goToStep(s) {
+    if (s <= maxReachedStep) {
+        nextStep(s);
+    }
+}
+
+function updateTopics(grade) {
+  const topics = ['תספורת גברים', 'תספורת & זקן', 'תספורת ילדים'];
+  const chips = document.getElementById('topicChips');
+  chips.innerHTML = topics.map(t =>
+    `<div class="chip" onclick="selectChip(this)">${t}</div>`
+  ).join('');
+}
+
+function selectChip(el) {
+    el.classList.toggle('selected');
+}
+
+function selectTime(el) {
+    if (el.classList.contains('occupied') || el.classList.contains('past')) return;
+    document.querySelectorAll('.time-slot').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    updateBookingSummary();
+}
+
+function checkAvailability(date) {
+    const grid = document.getElementById('timeGrid');
+    const help = document.getElementById('timeHelp');
+    if (!date) {
+        grid.style.display = 'none';
+        help.style.display = 'none';
+        return;
+    }
+    grid.style.display = 'grid';
+    help.style.display = 'block';
+
+    const now = new Date();
+    const israelTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Jerusalem"}));
+    const todayStr = israelTime.toISOString().split('T')[0];
+    const currentHour = israelTime.getHours();
+    const currentMin = israelTime.getMinutes();
+
+    // Create a flat map of time slots for O(1) lookups
+    const slotsMap = {};
+    document.querySelectorAll('.time-slot').forEach(slot => {
+        slot.classList.remove('selected', 'occupied', 'past');
+        const timeStr = slot.innerText.trim();
+        slotsMap[timeStr] = slot;
+
+        // Block past slots for today
+        if (date === todayStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            if (h < currentHour || (h === currentHour && m <= currentMin)) {
+                slot.classList.add('past');
+            }
+        }
+    });
+
+    // Fetch availability and bookings concurrently
+    Promise.all([
+        db.collection("availability").where("date", "==", date).where("isFree", "==", false).get(),
+        db.collection("bookings").where("date", "==", date).get()
+    ]).then(([availSnap, bookingsSnap]) => {
+        availSnap.forEach(doc => {
+            const data = doc.data();
+            if (slotsMap[data.time]) {
+                slotsMap[data.time].classList.add('occupied');
+            }
+        });
+
+        bookingsSnap.forEach(doc => {
+            const b = doc.data();
+            if (b.status !== 'בוטל' && slotsMap[b.time]) {
+                slotsMap[b.time].classList.add('occupied');
+            }
+        });
+    }).catch(err => {
+        console.error("Error fetching availability:", err);
+    });
+}
+
+function approveAllBookings() {
+    showConfirm('האם לאשר את כל התורים במערכת?', () => {
+        db.collection("bookings").get().then(snapshot => {
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.update(doc.ref, { status: 'מאושר' }));
+            batch.commit().then(() => {
+                showToast('כל התורים אושרו בהצלחה');
+            });
+        });
+    });
+}
+
+let calData = {};
+let sessionPhone = ''; // persists across nav clicks for auto-refresh
+
+function confirmBooking() {
+    const fname = document.getElementById('fname').value || '';
+    const fphone = document.getElementById('fphone').value || '';
+    const femail = document.getElementById('femail').value || '';
+    const dateInput = document.getElementById('fdate').value;
+    const timeSlot = document.querySelector('.time-slot.selected');
+    const gradeSelect = document.getElementById('fgrade');
+    const gradeText = gradeSelect.selectedOptions[0] ? gradeSelect.selectedOptions[0].text : '';
+    const gradeValue = gradeSelect.value;
+    const selectedChips = Array.from(document.querySelectorAll('.chip.selected'));
+    const subject = selectedChips.map(c => c.innerText).join(', ');
+    const errorDiv = document.getElementById('formError');
+
+    // Email is now OPTIONAL, so we only check Name, Date, Time, and Grade.
+    if (!fname || !dateInput || !timeSlot || !gradeValue) {
+        if(errorDiv) {
+            errorDiv.innerText = 'נא למלא שם, לבחור רמה, תאריך ושעה.';
+            errorDiv.style.display = 'block';
+        }
+        return;
+    }
+    if (selectedChips.length === 0) {
+        if(errorDiv) {
+            errorDiv.innerText = 'נא לבחור לפחות נושא אחד.';
+            errorDiv.style.display = 'block';
+        }
+        return;
+    }
+
+    const selectedTime = timeSlot.innerText.trim();
+    if (selectedTime === '14:00') {
+        if(errorDiv) {
+            errorDiv.innerText = 'שעה זו אינה פנויה יותר לתיאום.';
+            errorDiv.style.display = 'block';
+        }
+        return;
+    }
+
+    if (!isSlotAvailable(dateInput, selectedTime)) {
+        if(errorDiv) {
+            errorDiv.innerText = 'שעה זו אינה פנויה, אנא בחר שעה אחרת.';
+            errorDiv.style.display = 'block';
+        }
+        return;
+    }
+
+    if(errorDiv) errorDiv.style.display = 'none';
+
+    const newBooking = {
+        name: fname,
+        phone: fphone,
+        email: femail,
+        topic: subject,
+        subject: subject,
+        grade: gradeText,
+        appointmentFormat: document.getElementById('fappointmenttype').value,
+        date: dateInput,
+        time: selectedTime,
+        comments: document.getElementById('fcomments').value || '',
+        status: "ממתין",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        // Reminder flags for backend scheduling (24h and 2h before)
+        reminders: {
+            confirmationSent: false,
+            h24Sent: false,
+            h2Sent: false
+        }
+    };
+
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'מעבד...';
+        submitBtn.style.opacity = '0.6';
+    }
+
+    // ONLY push to Firestore here - never on slot click
+    db.collection("bookings").add(newBooking).then(() => {
+        // Trigger both Admin and Client notifications
+        sendNotification('new_booking', newBooking);
+
+        // Success flow
+        const startDate = dateInput.replace(/-/g, '') + 'T' + selectedTime.replace(':', '') + '00';
+        const endHour = (parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0');
+        const endDate = dateInput.replace(/-/g, '') + 'T' + endHour + selectedTime.split(':')[1] + '00';
+        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תור מתמטיקה עם גבאי')}&dates=${startDate}/${endDate}&details=${encodeURIComponent('נושא: ' + subject + '\nשם: ' + fname)}&location=Online`;
+
+        window.open(gcalUrl, '_blank');
+
+        // Save client profile for next visit
+        saveProfile(fname, fphone);
+
+        // Trigger Golden Confetti Celebration
+        confetti({
+            particleCount: 150,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#c9a84c', '#ffffff', '#ffffff']
+        });
+
+        document.querySelectorAll('.step').forEach(e => e.classList.remove('active'));
+        document.getElementById('success').classList.add('active');
+        document.querySelector('.progress').style.display = 'none';
+    }).catch(err => {
+        console.error('Firebase Error:', err);
+        showToast('שגיאה בשמירת התור, נסה שוב.');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'סיים וקבע תור';
+            submitBtn.style.opacity = '1';
+        }
+    });
+}
+
+function showAuth() {
+    document.getElementById('auth-modal').style.display = 'flex';
+    setTimeout(() => {
+        document.getElementById('adminPass').focus();
+    }, 100);
+}
+
+function loginAdmin() {
+    const p = document.getElementById('adminPass').value;
+    if(p === 'admin123') {
+        document.getElementById('auth-modal').style.display = 'none';
+        document.getElementById('book').classList.add('admin-hidden');
+        document.getElementById('hero').classList.add('admin-hidden');
+        document.getElementById('adminDashboard').style.display = 'flex';
+        renderAdminBookings();
+        renderAvailGrid();
+        showToast('התחברת בהצלחה כמנהל');
+        document.getElementById('adminPass').value = '';
+    } else {
+        showToast('סיסמה שגויה, נסה שוב');
+    }
+}
+
+function buildGCalLink(b) {
+    const start = b.date.replace(/-/g, '') + 'T' + b.time.replace(':', '') + '00';
+    const endHour = (parseInt(b.time.split(':')[0]) + 1).toString().padStart(2, '0');
+    const end = b.date.replace(/-/g, '') + 'T' + endHour + b.time.split(':')[1] + '00';
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תור מתמטיקה עם גבאי')}&dates=${start}/${end}&details=${encodeURIComponent('נושא: ' + b.topic)}&location=Online`;
+}
+
+function getProfile() {
+    const name = localStorage.getItem('gabay_name');
+    const phone = localStorage.getItem('gabay_phone');
+    const email = localStorage.getItem('gabay_email') || '';
+    return (name && phone) ? { name, phone, email } : null;
+}
+
+function saveProfile(name, phone, email) {
+    localStorage.setItem('gabay_name', name);
+    localStorage.setItem('gabay_phone', phone);
+    if (email) localStorage.setItem('gabay_email', email);
+    applyProfileToBookingForm();
+    updateNavAuth();
+}
+
+function clearProfile() {
+    localStorage.removeItem('gabay_name');
+    localStorage.removeItem('gabay_phone');
+    localStorage.removeItem('gabay_email');
+}
+
+function updateNavAuth() {
+    const profile = getProfile();
+    const authButtons = document.getElementById('navAuthButtons');
+    const userChip = document.getElementById('navUserChip');
+    const navLogout = document.getElementById('navLogout');
+    if (profile) {
+        if (authButtons) authButtons.style.display = 'none';
+        if (userChip) { userChip.style.display = 'flex'; document.getElementById('navUserName').textContent = profile.name; }
+        if (navLogout) navLogout.style.display = 'block';
+    } else {
+        if (authButtons) authButtons.style.display = 'flex';
+        if (userChip) userChip.style.display = 'none';
+        if (navLogout) navLogout.style.display = 'none';
+    }
+}
+
+function navShowLogin() {
+    if (getProfile()) { openClientArea(); return; }
+    document.getElementById('modal-login-panel').style.display = 'block';
+    document.getElementById('modal-register-panel').style.display = 'none';
+    document.getElementById('client-auth-modal').style.display = 'flex';
+    setTimeout(() => { const el = document.getElementById('modalLoginPhone'); if(el) el.focus(); }, 80);
+}
+
+function navShowRegister() {
+    if (getProfile()) { openClientArea(); return; }
+    document.getElementById('modal-login-panel').style.display = 'none';
+    document.getElementById('modal-register-panel').style.display = 'block';
+    document.getElementById('client-auth-modal').style.display = 'flex';
+    setTimeout(() => { const el = document.getElementById('modalRegName'); if(el) el.focus(); }, 80);
+}
+
+function showModalLogin() {
+    document.getElementById('modal-login-panel').style.display = 'block';
+    document.getElementById('modal-register-panel').style.display = 'none';
+    setTimeout(() => document.getElementById('modalLoginPhone').focus(), 80);
+}
+
+function showModalRegister() {
+    document.getElementById('modal-login-panel').style.display = 'none';
+    document.getElementById('modal-register-panel').style.display = 'block';
+    setTimeout(() => document.getElementById('modalRegName').focus(), 80);
+}
+
+function closeClientAuthModal() {
+    document.getElementById('client-auth-modal').style.display = 'none';
+}
+
+function modalSubmitLogin() {
+    const phone = document.getElementById('modalLoginPhone').value.trim();
+    if (!phone) { showToast('נא להזין מספר טלפון'); return; }
+
+    db.collection("bookings").where("phone", "==", phone).get().then(snap => {
+        if (snap.empty) {
+            showToast('מספר לא נמצא — עבור להרשמה');
+            showModalRegister();
+            return;
+        }
+        let appointments = [];
+        snap.forEach(doc => appointments.push(doc.data()));
+        appointments.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+        const name = appointments[0].name || '';
+        const email = appointments[0].email || '';
+        saveProfile(name, phone, email);
+        sessionPhone = phone;
+        closeClientAuthModal();
+        showToast('שלום ' + name + '! כניסה בוצעה בהצלחה');
+        document.getElementById('modalLoginPhone').value = '';
+    }).catch(() => showToast('שגיאה בכניסה, נסה שוב'));
+}
+
+function modalSubmitRegister() {
+    const name = document.getElementById('modalRegName').value.trim();
+    const phone = document.getElementById('modalRegPhone').value.trim();
+    const email = document.getElementById('modalRegEmail').value.trim();
+    if (!name) { showToast('נא להזין שם'); return; }
+    if (!phone) { showToast('נא להזין מספר טלפון'); return; }
+    if (!email) { showToast('נא להזין כתובת אימייל'); return; }
+
+    saveProfile(name, phone, email);
+    sessionPhone = phone;
+    closeClientAuthModal();
+    showToast('שלום ' + name + '! נרשמת בהצלחה');
+    document.getElementById('modalRegName').value = '';
+    document.getElementById('modalRegPhone').value = '';
+    document.getElementById('modalRegEmail').value = '';
+}
+
+function sidebarLogout() {
+    closeMenu();
+    logoutProfile();
+}
+
+/* ── Auth screen navigation ── */
+function showAuthButtons() {
+    document.getElementById('authButtons').style.display = 'block';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('loggedInChip').style.display = 'none';
+    updateNavAuth();
+}
+
+function showLoginForm() {
+    document.getElementById('authButtons').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('registerForm').style.display = 'none';
+    setTimeout(() => { const el = document.getElementById('loginPhone'); if (el) el.focus(); }, 80);
+}
+
+function showRegisterForm() {
+    document.getElementById('authButtons').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'block';
+    setTimeout(() => { const el = document.getElementById('regName'); if (el) el.focus(); }, 80);
+}
+
+function showLoggedInChip(name, phone) {
+    document.getElementById('authButtons').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'none';
+    document.getElementById('registerForm').style.display = 'none';
+    const chip = document.getElementById('loggedInChip');
+    chip.style.display = 'flex';
+    document.getElementById('loggedInName').textContent = name;
+    document.getElementById('loggedInPhone').textContent = phone;
+    updateNavAuth();
+}
+
+/* ── Auth actions ── */
+function submitLogin() {
+    const phone = document.getElementById('loginPhone').value.trim();
+    if (!phone) { showToast('נא להזין מספר טלפון'); return; }
+
+    db.collection("bookings").where("phone", "==", phone).get().then(snap => {
+        if (snap.empty) {
+            showToast('מספר לא נמצא, אנא הירשם קודם');
+            return;
+        }
+        let appointments = [];
+        snap.forEach(doc => appointments.push(doc.data()));
+        appointments.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+        const name = appointments[0].name || '';
+        const email = appointments[0].email || '';
+        saveProfile(name, phone, email);
+        sessionPhone = phone;
+        showToast('שלום ' + name + '! כניסה בוצעה בהצלחה');
+        showLoggedInChip(name, phone);
+        fetchMyAppointments();
+    }).catch(err => {
+        console.error(err);
+        showToast('שגיאה בכניסה, נסה שוב');
+    });
+}
+
+function submitRegister() {
+    const name = document.getElementById('regName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    if (!name) { showToast('נא להזין שם'); return; }
+    if (!phone) { showToast('נא להזין מספר טלפון'); return; }
+
+    saveProfile(name, phone, email);
+    sessionPhone = phone;
+    showToast('שלום ' + name + '! נרשמת בהצלחה');
+    showLoggedInChip(name, phone);
+    fetchMyAppointments();
+}
+
+function logoutProfile() {
+    clearProfile();
+    sessionPhone = '';
+    document.getElementById('appointmentsResult').style.display = 'none';
+    document.getElementById('loginArea').style.display = 'block';
+    const refreshBtn = document.getElementById('refreshClientBtn');
+    if (refreshBtn) refreshBtn.style.display = 'none';
+    const wb = document.getElementById('welcomeBanner');
+    if (wb) wb.style.display = 'none';
+    showAuthButtons();
+    applyProfileToBookingForm();
+}
+
+function switchUser() {
+    showConfirm('לנתק את הפרופיל הנוכחי ולהתחבר עם מספר אחר?', logoutProfile);
+}
+
+function applyProfileToBookingForm() {
+    const profile = getProfile();
+    const nameInput = document.getElementById('fname');
+    const phoneInput = document.getElementById('fphone');
+    const emailInput = document.getElementById('femail');
+    const identityFields = document.getElementById('step1IdentityFields');
+    const summaryBar = document.getElementById('profileSummaryBar');
+    if (!nameInput || !phoneInput) return;
+
+    if (profile) {
+        // Fill hidden inputs so confirmBooking() can read them
+        nameInput.value = profile.name;
+        phoneInput.value = profile.phone;
+        if (emailInput && profile.email) emailInput.value = profile.email;
+
+        // Hide the full identity fields, show compact summary
+        if (identityFields) identityFields.style.display = 'none';
+        if (summaryBar) {
+            summaryBar.style.display = 'flex';
+            document.getElementById('psbName').textContent = profile.name;
+            document.getElementById('psbPhone').textContent = profile.phone + (profile.email ? ' · ' + profile.email : '');
+        }
+    } else {
+        nameInput.value = '';
+        phoneInput.value = '';
+        if (emailInput) emailInput.value = '';
+        if (identityFields) identityFields.style.display = 'block';
+        if (summaryBar) summaryBar.style.display = 'none';
+    }
+}
+
+function fetchMyAppointments() {
+    const profile = getProfile();
+    const phone = (profile ? profile.phone : '') || sessionPhone;
+    if (!phone) {
+        showToast('נא להתחבר תחילה');
+        return;
+    }
+    sessionPhone = phone;
+
+    const list = document.getElementById('appointmentsList');
+    const resultArea = document.getElementById('appointmentsResult');
+    const loginArea = document.getElementById('loginArea');
+    const refreshBtn = document.getElementById('refreshClientBtn');
+
+    list.innerHTML = '<p style="text-align:center; padding: 2rem;">טוען את התורים שלך...</p>';
+    loginArea.style.display = 'none';
+    resultArea.style.display = 'block';
+    if (refreshBtn) refreshBtn.style.display = 'flex';
+
+    db.collection("bookings").where("phone", "==", phone).get().then(snap => {
+        const wb = document.getElementById('welcomeBanner');
+        if (snap.empty) {
+            list.innerHTML = '<div style="text-align:center; padding: 2rem; opacity:0.7">לא נמצאו תורים עתידיים למספר זה.</div>';
+            if (wb) wb.style.display = 'none';
+            return;
+        }
+
+        let appointments = [];
+        snap.forEach(doc => appointments.push({ id: doc.id, ...doc.data() }));
+        appointments.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+
+        // Filter by name if profile exists (data integrity)
+        const profile = getProfile();
+        if (profile && profile.name) {
+            appointments = appointments.filter(l => l.name && l.name.trim() === profile.name.trim());
+        }
+        if (appointments.length === 0) {
+            list.innerHTML = '<div style="text-align:center; padding: 2rem; opacity:0.7">לא נמצאו תורים עתידיים למספר זה.</div>';
+            if (wb) wb.style.display = 'none';
+            return;
+        }
+
+        // Welcome banner with name + phone
+        const clientName = appointments[0].name || '';
+        const displayPhone = profile ? profile.phone : phone;
+        if (wb && clientName) {
+            wb.innerHTML = `<span style="font-size:1.05rem">שלום <span class="welcome-name">${clientName}</span>, מציג את התורים שלך <span style="color:var(--text-muted);font-size:0.9rem">(${displayPhone})</span> 👋</span>`;
+            wb.style.display = 'block';
+        }
+
+        // Upcoming: today or tomorrow (Israel time)
+        const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" }));
+        const todayStr = now.toISOString().split('T')[0];
+        const tom = new Date(now); tom.setDate(now.getDate() + 1);
+        const tomorrowStr = tom.toISOString().split('T')[0];
+
+        let html = '';
+        appointments.forEach(b => {
+            const statusClass = b.status === 'מאושר' ? 'approved' : (b.status === 'בוטל' ? 'cancelled' : 'pending');
+            const displayStatus = b.status === 'ממתין' ? 'ממתין לאישור' : b.status;
+            const badgeClass = b.status === 'מאושר' ? 'ok' : (b.status === 'בוטל' ? 'cancel' : 'wait');
+            const isUpcoming = b.status === 'מאושר' && (b.date === todayStr || b.date === tomorrowStr);
+            const upcomingClass = isUpcoming ? ' upcoming' : '';
+            const soonBadge = isUpcoming ? '<span class="badge-soon">בקרוב</span>' : '';
+            const gcalLink = b.status === 'מאושר'
+                ? `<a href="${buildGCalLink(b)}" target="_blank" class="gcal-link"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>הוסף ליומן</a>`
+                : '';
+            html += `
+                <div class="appointment-ticket ${statusClass}${upcomingClass}">
+                    <div class="ticket-stripe"></div>
+                    <div class="ticket-body">
+                        <div class="ticket-left">
+                            <div class="ticket-date">${b.date}</div>
+                            <div class="ticket-time">${b.time}</div>
+                            ${gcalLink}
+                        </div>
+                        <div class="ticket-divider"></div>
+                        <div class="ticket-right">
+                            <div class="ticket-topic">${soonBadge}${b.topic}</div>
+                            <div class="ticket-grade">רמה: ${b.grade}</div>
+                        </div>
+                        <div class="ticket-badge-wrap">
+                            <span class="badge ${badgeClass}">${displayStatus}</span>
+                        </div>
+                    </div>
+                    ${b.status !== 'בוטל' ? `<div class="ticket-footer"><button class="cancel-appointment-btn" onclick="cancelMyAppointment('${b.id}')">ביטול תור ×</button></div>` : ''}
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+    }).catch(err => {
+        console.error(err);
+        showToast('שגיאה בטעינת התורים');
+        backToLogin();
+    });
+}
+
+function cancelMyAppointment(bookingId) {
+    showConfirm('האם לבטל את התור? לא ניתן לבטל פחות מ-24 שעות לפני.', () => {
+        db.collection("bookings").doc(bookingId).get().then(doc => {
+            if (!doc.exists) return;
+            const b = doc.data();
+            db.collection("bookings").doc(bookingId).update({ status: "בוטל" }).then(() => {
+                sendCancellationEmails(b);
+                showToast('התור בוטל — נשלחה הודעה במייל');
+                fetchMyAppointments();
+            });
+        }).catch(() => showToast('שגיאה בביטול התור'));
+    });
+}
+
+function sendCancellationEmails(b) {
+    const base = {
+        client_name: b.name || '',
+        date: b.date || '',
+        time: b.time || '',
+        topic: b.topic || '',
+        grade: b.grade || '',
+        phone: b.phone || '',
+        email: b.email || '',
+        appointment_format: b.appointmentFormat || '',
+        user_comments: 'התור בוטל על ידי הלקוח',
+        type: 'ביטול תור'
+    };
+    // Admin
+    emailjs.send("service_uiiqhnd", "template_e6swvbo", { ...base, to_email: "nooam.gabay@gmail.com" }, "JI7HdPnpg063aq0Pl");
+    // Client
+    if (b.email) {
+        emailjs.send("service_uiiqhnd", "template_e6swvbo", { ...base, to_email: b.email }, "JI7HdPnpg063aq0Pl");
+    }
+}
+
+function backToLogin() {
+    document.getElementById('appointmentsResult').style.display = 'none';
+    document.getElementById('loginArea').style.display = 'block';
+    const refreshBtn = document.getElementById('refreshClientBtn');
+    if (refreshBtn) refreshBtn.style.display = 'none';
+
+    const profile = getProfile();
+    if (profile) {
+        showLoggedInChip(profile.name, profile.phone);
+    } else {
+        sessionPhone = '';
+        showAuthButtons();
+    }
+}
+
+function openClientArea() {
+    logoutAdminNoConfirm();
+    document.getElementById('book').classList.add('admin-hidden');
+    document.getElementById('hero').classList.add('admin-hidden');
+    document.getElementById('my-appointments').style.display = 'flex';
+    window.scrollTo(0,0);
+
+    const profile = getProfile();
+    if (profile) {
+        showLoggedInChip(profile.name, profile.phone);
+        sessionPhone = profile.phone;
+        fetchMyAppointments();
+    } else {
+        showAuthButtons();
+    }
+}
+
+function logoutClient() {
+    document.getElementById('book').classList.remove('admin-hidden');
+    document.getElementById('hero').classList.remove('admin-hidden');
+    document.getElementById('my-appointments').style.display = 'none';
+}
+
+function logoutAdminNoConfirm() {
+    document.getElementById('adminDashboard').style.display = 'none';
+    document.getElementById('book').classList.remove('admin-hidden');
+    document.getElementById('hero').classList.remove('admin-hidden');
+}
+
+function togglePass() {
+  const input = document.getElementById('adminPass');
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+// Sidebar Menu Logic
+function toggleMenu() {
+    document.getElementById('sidebarMenu').classList.toggle('active');
+    document.getElementById('sidebarOverlay').classList.toggle('active');
+    document.getElementById('hamburgerBtn').classList.toggle('active');
+}
+
+function closeMenu() {
+    document.getElementById('sidebarMenu').classList.remove('active');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    document.getElementById('hamburgerBtn').classList.remove('active');
+}
+
+function closeMenuAndLogoutAdmin() {
+    closeMenu();
+    logoutAdmin();
+}
+
+function closeMenuAndOpenClientArea() {
+    closeMenu();
+    openClientArea();
+}
+
+function logoutAdmin() {
+  if (unsubBookings) { unsubBookings(); unsubBookings = null; }
+  document.getElementById('adminDashboard').style.display = 'none';
+  document.getElementById('hero').classList.remove('admin-hidden');
+  document.getElementById('book').classList.remove('admin-hidden');
+}
+
+let unsubBookings = null;
+function renderAdminBookings() {
+  if (unsubBookings) unsubBookings();
+  const list = document.getElementById('adminBookingsList');
+  list.innerHTML = '<p style="color:rgba(255,255,255,0.5)">טוען תורים...</p>';
+  unsubBookings = db.collection("bookings").orderBy("date").onSnapshot(snapshot => {
+    list.innerHTML = '';
+    snapshot.forEach(doc => {
+      const b = { id: doc.id, ...doc.data() };
+      const div = document.createElement('div');
+      div.className = 'schedule-item glass';
+      if (b.status === 'מאושר') div.classList.add('approved');
+      else if (b.status === 'בוטל') div.classList.add('cancelled');
+
+      let statusBadge = b.status === 'מאושר' ? `<span class="badge ok">מאושר</span>` : b.status === 'בוטל' ? `<span class="badge cancel">בוטל</span>` : `<span class="badge wait">ממתין לאישור</span>`;
+      let actionBtns = '';
+      if (b.status === 'בוטל') {
+          actionBtns = `
+            <button class="btn btn-mini" onclick="restoreBookingDB('${doc.id}')">שחזר</button>
+            <button class="btn btn-mini btn-danger" onclick="permanentlyDeleteDB('${doc.id}')">מחק</button>
+            <button class="btn btn-mini btn-danger" onclick='deleteFromCalendar(${JSON.stringify(b).replace(/'/g, "&#39;")})'>מחק מגוגל קלנדר</button>
+          `;
+      } else {
+          actionBtns = `
+            <button class="btn btn-mini btn-outline" onclick="startReschedule('${doc.id}', '${b.name}')">הזז תור</button>
+            <button class="btn btn-mini btn-danger" onclick="cancelBookingDB('${doc.id}', this)">בטל תור</button>
+          `;
+          if (b.status === 'ממתין') {
+              actionBtns = `<button class="btn btn-mini btn-outline" onclick="approveBookingDB('${doc.id}', this)">אשר תור</button>` + actionBtns;
+          }
+      }
+      div.innerHTML = `<div class="schedule-info"><strong>${b.name || ''} - ${b.phone || ''}</strong><span>${b.grade || ''} | ${b.subject || b.topic || ''} | ${b.appointmentFormat || ''} | ${b.date || ''}, ${b.time || ''}</span></div><div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">${statusBadge}${actionBtns}</div>`;
+      list.appendChild(div);
+    });
+    if (snapshot.empty) list.innerHTML = '<p style="color:rgba(255,255,255,0.5);text-align:center">אין תורים עדיין</p>';
+  });
+}
+
+function renderAvailGrid() {
+  const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const sunday = new Date(today);
+  sunday.setDate(today.getDate() - dayOfWeek + (currentWeekOffset * 7));
+
+  const cols = document.querySelectorAll('.avail-col');
+  cols.forEach((col, i) => {
+    const d = new Date(sunday);
+    d.setDate(sunday.getDate() + i);
+    const dateISO = d.toISOString().split('T')[0];
+    const dateDisplay = d.getDate() + '/' + (d.getMonth() + 1);
+    col.querySelector('h3').innerText = days[i] + '\n' + dateDisplay;
+    col.querySelector('h3').style.whiteSpace = 'pre';
+    col.querySelector('h3').dataset.date = dateISO;
+
+    col.querySelectorAll('.avail-slot').forEach(slot => {
+      slot.classList.add('free');
+      slot.classList.remove('booked');
+      slot.onmouseover = null;
+      slot.onmouseout = null;
+    });
+  });
+
+  const start = new Date(sunday).toISOString().split('T')[0];
+  const end = new Date(sunday);
+  end.setDate(sunday.getDate() + 7);
+  const endStr = end.toISOString().split('T')[0];
+
+  // Fetch Bookings for current week to show in grid
+  db.collection("bookings").where("date", ">=", start).where("date", "<", endStr).get().then(bookingSnap => {
+      const weekBookings = [];
+      bookingSnap.forEach(d => {
+          const b = d.data();
+          if(b.status !== 'בוטל') weekBookings.push(b);
+      });
+
+      db.collection("availability")
+        .where("date", ">=", start)
+        .where("date", "<", endStr)
+        .get().then(snapshot => {
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            cols.forEach(col => {
+              if (col.querySelector('h3').dataset.date === data.date) {
+                col.querySelectorAll('.avail-slot').forEach(slot => {
+                  if (slot.innerText.trim() === data.time) {
+                    if (data.isFree) slot.classList.add('free');
+                    else slot.classList.remove('free');
+                  }
+                });
+              }
+            });
+          });
+
+          // Overlay bookings onto grid
+          weekBookings.forEach(b => {
+              cols.forEach(col => {
+                  if (col.querySelector('h3').dataset.date === b.date) {
+                      col.querySelectorAll('.avail-slot').forEach(slot => {
+                          if (slot.innerText.trim() === b.time) {
+                              slot.classList.remove('free');
+                              slot.classList.add('booked');
+                              slot.onmouseover = (e) => showSlotTooltip(e, b);
+                              slot.onmouseout = hideSlotTooltip;
+                          }
+                      });
+                  }
+              });
+          });
+        });
+  });
+}
+
+function showSlotTooltip(e, b) {
+    let t = document.getElementById('slot-tooltip');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'slot-tooltip';
+        t.className = 'slot-tooltip';
+        document.body.appendChild(t);
+    }
+    t.innerHTML = `<strong>${b.name}</strong><span>${b.topic}</span>`;
+    t.style.display = 'block';
+    t.style.left = (e.pageX + 10) + 'px';
+    t.style.top = (e.pageY - 40) + 'px';
+}
+function hideSlotTooltip() {
+    const t = document.getElementById('slot-tooltip');
+    if (t) t.style.display = 'none';
+}
+
+let rescheduleBookingId = null;
+function startReschedule(id, name) {
+    rescheduleBookingId = id;
+    showToast(`מזיז את התור של ${name}... בחר מועד חדש ביומן למטה`);
+    document.getElementById('adminAvailGrid').scrollIntoView({ behavior: 'smooth' });
+}
+
+function handleAdminSlotClick(el) {
+    if (rescheduleBookingId) {
+        completeReschedule(el);
+    } else {
+        toggleAvail(el);
+    }
+}
+
+function completeReschedule(el) {
+    const date = el.parentElement.querySelector('h3').dataset.date;
+    const time = el.innerText.trim();
+    db.collection("bookings").doc(rescheduleBookingId).update({
+        date: date,
+        time: time
+    }).then(() => {
+        showToast("התור הועבר בהצלחה");
+        rescheduleBookingId = null;
+        renderAvailGrid();
+    });
+}
+
+function isSlotAvailable(date, time) {
+  const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const dayIndex = new Date(date + 'T12:00:00').getDay();
+  const dayName = days[dayIndex];
+  const cols = document.querySelectorAll('.avail-col');
+  for (let col of cols) {
+    const header = col.querySelector('h3').innerText;
+    if (header.includes(dayName)) {
+      const slots = col.querySelectorAll('.avail-slot');
+      for (let slot of slots) {
+        if (slot.innerText.trim() === time && !slot.classList.contains('free')) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+function cancelBookingDB(id) {
+  showConfirm('האם לבטל את התור?', () => {
+    db.collection("bookings").doc(id).get().then(doc => {
+      if (!doc.exists) return;
+      const b = doc.data();
+      db.collection("bookings").doc(id).update({ status: "בוטל" }).then(() => {
+        showToast('התור בוטל!');
+        const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+        const dayName = days[new Date(b.date + 'T12:00:00').getDay()];
+        db.collection("availability").doc(`${dayName}_${b.time}`).set({
+          day: dayName, time: b.time, isFree: true
+        }, { merge: true }).then(() => { renderAvailGrid(); });
+      });
+    });
+  });
+}
+
+function permanentlyDeleteDB(id) {
+  showConfirm('האם למחוק לצמיתות את התור מהמסד?', () => {
+    db.collection("bookings").doc(id).get().then(doc => {
+      if (!doc.exists) return;
+      const b = doc.data();
+      db.collection("bookings").doc(id).delete().then(() => {
+        showToast('התור נמחק לצמיתות!');
+        const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+        const dayName = days[new Date(b.date + 'T12:00:00').getDay()];
+        db.collection("availability").doc(`${dayName}_${b.time}`).set({ isFree: true }, { merge: true }).then(() => renderAvailGrid());
+      });
+    });
+  });
+}
+
+function restoreBookingDB(id) {
+  db.collection("bookings").doc(id).get().then(doc => {
+    if (!doc.exists) return;
+    const b = doc.data();
+    db.collection("bookings").doc(id).update({ status: "מאושר" }).then(() => {
+      showToast('התור שוחזר בהצלחה!');
+      const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+      const dayName = days[new Date(b.date + 'T12:00:00').getDay()];
+      db.collection("availability").doc(`${dayName}_${b.time}`).set({ isFree: false }, { merge: true }).then(() => renderAvailGrid());
+    });
+  });
+}
+
+function deleteCancelledBookings() {
+  showConfirm('האם למחוק את כל התורים המבוטלים?', () => {
+    db.collection("bookings").where("status", "==", "בוטל").get().then(snapshot => {
+      const batch = db.batch();
+      snapshot.forEach(doc => batch.delete(doc.ref));
+      batch.commit().then(() => showToast('כל התורים המבוטלים נמחקו'));
+    });
+  });
+}
+
+function approveBookingDB(id, btn) {
+  db.collection("bookings").doc(id).get().then(doc => {
+    if (!doc.exists) return;
+    const b = doc.data();
+    db.collection("bookings").doc(id).update({ status: "מאושר" }).then(() => {
+      showToast('התור אושר!');
+
+      db.collection("availability").doc(`${b.date}_${b.time}`).set({
+        date: b.date,
+        time: b.time,
+        isFree: false
+      }).then(() => {
+        renderAvailGrid();
+      });
+    });
+  });
+}
+
+function sendNotification(type, bookingData) {
+  // 1. Always send to Admin
+  const adminParams = {
+    to_email: "nooam.gabay@gmail.com",
+    client_name: bookingData.name,
+    date: bookingData.date,
+    time: bookingData.time,
+    topic: bookingData.topic,
+    grade: bookingData.grade,
+    phone: bookingData.phone || 'לא הוזן',
+    email: bookingData.email || 'לא הוזן',
+    appointment_format: bookingData.appointmentFormat,
+    user_comments: bookingData.comments || '',
+    type: "ADMIN_NOTIFICATION"
+  };
+  emailjs.send("service_uiiqhnd", "template_e6swvbo", adminParams, "JI7HdPnpg063aq0Pl");
+
+  // 2. Send to Client ONLY if email exists
+  if (bookingData.email) {
+    const clientParams = {
+      to_email: bookingData.email,
+      client_name: bookingData.name,
+      date: bookingData.date,
+      time: bookingData.time,
+      topic: bookingData.topic,
+      grade: bookingData.grade,
+      phone: bookingData.phone,
+      email: bookingData.email,
+      appointment_format: bookingData.appointmentFormat,
+      user_comments: bookingData.comments || '',
+      type: type
+    };
+    emailjs.send("service_uiiqhnd", "template_e6swvbo", clientParams, "JI7HdPnpg063aq0Pl");
+  }
+}
+
+function deleteFromCalendar(booking) {
+  const gcalUrl = `https://calendar.google.com/calendar/r/search?q=${encodeURIComponent(booking.name + ' ' + booking.topic)}`;
+  window.open(gcalUrl, '_blank');
+  showToast('נפתח גוגל קלנדר — מחק את האירוע שם ידנית');
+}
+
+function toggleAvail(el) {
+  el.classList.toggle('free');
+  const date = el.parentElement.querySelector('h3').dataset.date;
+  const time = el.innerText.trim();
+  const isFree = el.classList.contains('free');
+
+  db.collection("availability").doc(`${date}_${time}`).set({
+    date: date,
+    time: time,
+    isFree: isFree
+  }).then(() => {
+    showToast(`זמינות בתאריך ${date} בשעה ${time} עודכנה`);
+  });
+}
+
+function copyDayAvail(btn) {
+  const col = btn.parentElement;
+  const currentDate = col.querySelector('h3').dataset.date;
+  const nextDateObj = new Date(currentDate);
+  nextDateObj.setDate(nextDateObj.getDate() + 7);
+  const nextDate = nextDateObj.toISOString().split('T')[0];
+
+  const slots = col.querySelectorAll('.avail-slot');
+  const batch = db.batch();
+
+  slots.forEach(slot => {
+    const time = slot.innerText.trim();
+    const isFree = slot.classList.contains('free');
+    const nextId = `${nextDate}_${time}`;
+    batch.set(db.collection("availability").doc(nextId), {
+      date: nextDate,
+      time: time,
+      isFree: isFree
+    });
+  });
+
+  batch.commit().then(() => {
+    showToast(`זמינות יום ${currentDate} הועתקה לתאריך ${nextDate}`);
+  });
+}
+
+function resetForm() {
+  document.getElementById('fname').value = '';
+  document.getElementById('fphone').value = '';
+  document.getElementById('femail').value = '';
+  document.getElementById('fdate').value = '';
+  document.getElementById('fcomments').value = '';
+  document.querySelectorAll('.chip').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('.time-slot').forEach(e => e.classList.remove('selected'));
+  document.getElementById('bookingSummary').style.display = 'none';
+
+  // Re-enable the submit button for subsequent bookings
+  const submitBtn = document.getElementById('submitBtn');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.innerText = 'סיים וקבע תור';
+    submitBtn.style.opacity = '1';
+  }
+
+  maxReachedStep = 1;
+  nextStep(1);
+  document.querySelector('.progress').style.display = 'flex';
+  applyProfileToBookingForm();
+}
+
+let _confirmCb = null;
+function showConfirm(msg, onConfirm) {
+    _confirmCb = onConfirm;
+    document.getElementById('confirm-msg').innerText = msg;
+    const modal = document.getElementById('confirm-modal');
+    modal.style.display = 'flex';
+    document.getElementById('confirm-ok').onclick = () => {
+        modal.style.display = 'none';
+        if (_confirmCb) _confirmCb();
+        _confirmCb = null;
+    };
+    document.getElementById('confirm-cancel').onclick = () => {
+        modal.style.display = 'none';
+        _confirmCb = null;
+    };
+}
+
+function copyPhone() {
+    navigator.clipboard.writeText('0586458414').then(() => {
+        showToast('המספר הועתק!');
+    }).catch(() => {
+        // Fallback for older browsers
+        const el = document.createElement('textarea');
+        el.value = '0586458414';
+        el.style.position = 'fixed'; el.style.opacity = '0';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        showToast('המספר הועתק!');
+    });
+}
+
+function showToast(msg) {
+    const c = document.getElementById('toast-container');
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<div class="toast-icon">✓</div><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => {
+        if(c.contains(t)) c.removeChild(t);
+    }, 4000);
+}
+
+let adminKeySequence = '';
+document.addEventListener('keydown', (e) => {
+  if (!e.key) return;
+  // Ignore if user is typing in a form
+  if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+
+  adminKeySequence += e.key.toLowerCase();
+  if (adminKeySequence.includes('gab') || adminKeySequence.includes('עשנ')) {
+    adminKeySequence = '';
+    showAuth();
+  }
+  if (adminKeySequence.length > 10) adminKeySequence = '';
+});
+
+// Mobile Admin Trigger (Triple-click on Logo)
+let logoClicks = 0;
+document.getElementById('adminTrigger').addEventListener('click', () => {
+    logoClicks++;
+    if (logoClicks === 3) {
+        logoClicks = 0;
+        showAuth();
+    }
+    setTimeout(() => { logoClicks = 0; }, 2000);
+});
+</script>
+</body>
+</html>
