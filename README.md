@@ -27,17 +27,8 @@
   --yellow-glow: rgba(255,204,51,0.5);
   --sym-color: rgba(201, 168, 76, 0.11);
 }
-body.light-mode {
-  --bg: #f2f2f2;
-  --card-bg: rgba(255,255,255,0.72);
-  --nav-bg: rgba(255,255,255,0.88);
-  --text: #121212;
-  --text-muted: rgba(18,18,18,0.62);
-  --border: rgba(0,0,0,0.07);
-  --border-gold: rgba(201, 168, 76, 0.3);
-  --glow: rgba(201, 168, 76, 0.22);
-  --sym-color: rgba(18,18,18,0.07);
-}
+
+
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Heebo', sans-serif; }
 html { scroll-behavior: smooth; }
 body { background-color: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
@@ -80,14 +71,14 @@ nav {
 .sidebar-overlay.active { opacity: 1; visibility: visible; }
 
 .sidebar-menu {
-  position: fixed; top: 0; right: -320px; width: 280px; height: 100vh;
-  background: var(--nav-bg); border-left: 1px solid var(--border-gold);
+  position: fixed; top: 0; left: -320px; width: 280px; height: 100vh;
+  background: var(--nav-bg); border-right: 1px solid var(--border-gold);
   z-index: 1000; display: flex; flex-direction: column; padding: 6rem 2.5rem 2rem;
-  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: -5px 0 40px rgba(0,0,0,0.6);
+  transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 5px 0 40px rgba(0,0,0,0.6);
   gap: 2rem;
 }
-.sidebar-menu.active { right: 0; }
+.sidebar-menu.active { left: 0; }
 
 .sidebar-menu a {
   color: var(--text); text-decoration: none; font-weight: 600;
@@ -225,6 +216,60 @@ select option { background: #1a1a1a; color: var(--text); }
 
 /* ── TIME SLOTS ──────────────────────────────────── */
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
+.time-scroll-wrapper {
+  position: relative;
+}
+#timeGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#timeGrid::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.time-slot {
+  padding: 1rem 1.2rem;
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  color: var(--text);
+  font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.time-gradient {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.time-gradient.top {
+  top: 0;
+  background: linear-gradient(180deg, rgba(10,10,10,0.95), transparent);
+}
+.time-gradient.bottom {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(10,10,10,0.95), transparent);
+}
 .time-slot {
   padding: 1.2rem; text-align: center;
   background: rgba(255,255,255,0.03);
@@ -321,24 +366,58 @@ body.light-mode #bookingSummary span { color: #121212 !important; font-weight: 8
 .badge.wait { background: rgba(251,191,36,0.1); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
 .badge.cancel { background: rgba(239,68,68,0.1); color: #f87171; border: 1px solid rgba(239,68,68,0.25); }
 
-/* ── AVAIL GRID ──────────────────────────────────── */
-.avail-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem; width: 100%; max-width: 1200px; }
-.avail-col h3 { text-align: center; margin-bottom: 1.2rem; font-size: 1.2rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+/* ── AVAIL GRID (Compact responsive 7-column layout) ──────────────────────────────────── */
+#availGrid, #adminAvailGrid, .avail-grid, .admin-scroll-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 4px;
+}
+.avail-col {
+  flex: 0 0 calc((100% - 24px) / 7);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.avail-col h3 {
+  text-align: center;
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 4px;
+  white-space: pre;
+}
 .avail-slot {
-  padding: 0.9rem; text-align: center; border-radius: 10px; cursor: pointer;
-  margin-bottom: 0.7rem; transition: all 0.25s ease;
-  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
-  color: #f87171; font-weight: 600; font-size: 0.95rem;
+  padding: 6px 4px;
+  text-align: center;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+  color: var(--text);
+  font-weight: 600;
+  width: 100%;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: scale(0.7);
 }
 .avail-slot.free { background: rgba(74,222,128,0.08); border-color: rgba(74,222,128,0.22); color: #4ade80; }
-.avail-slot:hover { transform: scale(1.06); filter: brightness(1.25); }
+.avail-slot.booked { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #f87171; }
+.avail-slot:hover { transform: scale(1.03); filter: brightness(1.05); }
 .copy-btn {
   background: none; border: 1px solid var(--border-gold); color: var(--gold);
-  padding: 0.35rem; font-size: 0.75rem; border-radius: 8px; cursor: pointer;
-  margin-top: 0.4rem; transition: all 0.25s ease; width: 100%;
+  padding: 4px; font-size: 0.72rem; border-radius: 8px; cursor: pointer;
+  margin-top: 0.2rem; transition: all 0.18s ease; width: 100%;
 }
-.copy-btn:hover { background: rgba(201,168,76,0.1); }
-.avail-slot.booked { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.3); color: #f87171; }
+.copy-btn:hover { background: rgba(201,168,76,0.06); }
 
 .btn-mini { border-radius: 10px; padding: 0.5rem 0.9rem; font-size: 0.82rem; font-weight: 700; min-width: auto; }
 
@@ -809,22 +888,18 @@ input.field-locked {
             <div class="input-group">
                 <label>שעה פנויה</label>
                 <p id="timeHelp" style="color:var(--gold); font-size:0.9rem; margin-bottom: 1rem; display: none;">בחר שעה פנויה:</p>
-                <div class="grid" id="timeGrid" style="display: none;">
-                    <div class="time-slot" onclick="selectTime(this)">15:00</div>
-                    <div class="time-slot" onclick="selectTime(this)">15:00</div>
-                    <div class="time-slot" onclick="selectTime(this)">16:00</div>
-                    <div class="time-slot" onclick="selectTime(this)">17:00</div>
-                    <div class="time-slot" onclick="selectTime(this)">18:00</div>
-                    <div class="time-slot" onclick="selectTime(this)">19:00</div>
-                    <div class="time-slot" onclick="selectTime(this)">20:00</div>
+                <div class="time-scroll-wrapper">
+                    <div class="time-gradient top"></div>
+                    <div class="time-gradient bottom"></div>
+                    <div class="grid" id="timeGrid" style="display: none;"></div>
                 </div>
             </div>
 
             <div id="bookingSummary" class="glass no-hover" style="margin-top: 2rem; padding: 1.5rem; border: 1px solid var(--gold); border-radius: 16px; text-align: center; display: none;">
                 <h4 style="color: var(--gold); margin-bottom: 1rem; font-size: 1.2rem;">סיכום הזמנה</h4>
                 <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 1.1rem;">
-                    <div style="color: var(--text);">תאריך: <span id="summaryDate" style="font-weight: 600; color: var(--gold); margin-right: 5px;">-</span></div>
-                    <div style="color: var(--text);">שעה: <span id="summaryTime" style="font-weight: 600; color: var(--gold); margin-right: 5px;">-</span></div>
+                    <div style="color: var(--text);">תאריך: <span id="summaryDate" style="font-weight: 600; color: #ffffff !important; margin-right: 5px;">-</span></div>
+                    <div style="color: var(--text);">שעה: <span id="summaryTime" style="font-weight: 600; color: #ffffff !important; margin-right: 5px;">-</span></div>
                     <div style="margin-top: 0.5rem; font-size: 1.3rem; font-weight: 800; color: var(--gold); text-shadow: 0 0 10px var(--glow);">עלות תור: 30 ₪</div>
                 </div>
             </div>
@@ -948,15 +1023,7 @@ input.field-locked {
                     <button class="btn btn-sm btn-outline" onclick="changeWeek(1)">השבוע הבא</button>
                 </div>
             </div>
-            <div class="avail-grid" id="adminAvailGrid">
-                <div class="avail-col"><h3>ראשון</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-                <div class="avail-col"><h3>שני</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-                <div class="avail-col"><h3>שלישי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-                <div class="avail-col"><h3>רביעי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-                <div class="avail-col"><h3>חמישי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-                <div class="avail-col"><h3>שישי</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-                <div class="avail-col"><h3>שבת</h3><div class="avail-slot free" onclick="handleAdminSlotClick(this)">15:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">16:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">17:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">18:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">19:00</div><div class="avail-slot free" onclick="handleAdminSlotClick(this)">20:00</div><button class="copy-btn" onclick="copyDayAvail(this)">העתק לשבוע הבא</button></div>
-            </div>
+            <div class="avail-grid" id="adminAvailGrid"></div>
             <button class="btn btn-mini" style="margin-top: 2rem;" onclick="showToast('הזמינות עודכנה!')">שמור זמינות</button>
         </div>
 
@@ -1037,13 +1104,13 @@ input.field-locked {
 
 <script>
 const firebaseConfig = {
-  apiKey: "AIzaSyAIe7etcaWnB2Sco2G3WBt-M-f8-i_i_zI",
-  authDomain: "gabaymath.firebaseapp.com",
-  projectId: "gabaymath",
-  storageBucket: "gabaymath.firebasestorage.app",
-  messagingSenderId: "862656886301",
-  appId: "1:862656886301:web:a49945b73066023dc54374",
-  measurementId: "G-QJC05YG855"
+  apiKey: "AIzaSyAr-kaHQ0YBVw24WEgvdqF3YMH0g-kO7vE",
+  authDomain: "barber-project-c86d6.firebaseapp.com",
+  projectId: "barber-project-c86d6",
+  storageBucket: "barber-project-c86d6.firebasestorage.app",
+  messagingSenderId: "420272468711",
+  appId: "1:420272468711:web:08e4dd1d6e30b3dd45a842",
+  measurementId: "G-41WWD1361K"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -1102,15 +1169,25 @@ window.onload = function() {
     });
 
     // Enter-key chain: Name → Phone → Email → Next
-    document.getElementById('fname').addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('fphone').focus(); }
-    });
-    document.getElementById('fphone').addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); document.getElementById('femail').focus(); }
-    });
-    document.getElementById('femail').addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); nextStep(2); }
-    });
+    const fnameEl = document.getElementById('fname');
+    const fphoneEl = document.getElementById('fphone');
+    const femailEl = document.getElementById('femail');
+    
+    if (fnameEl) {
+        fnameEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); if (fphoneEl) fphoneEl.focus(); }
+        });
+    }
+    if (fphoneEl) {
+        fphoneEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); if (femailEl) femailEl.focus(); else nextStep(2); }
+        });
+    }
+    if (femailEl) {
+        femailEl.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); nextStep(2); }
+        });
+    }
 
     // Nav active state on scroll
     const sections = document.querySelectorAll('section[id]');
@@ -1208,14 +1285,130 @@ function updateTopics(grade) {
   ).join('');
 }
 
+function getTimeItems() {
+    const items = [];
+    for (let hour = 8; hour <= 21; hour++) {
+        for (let minute = 0; minute < 60; minute += 20) {
+            if (hour === 21 && minute > 0) break;
+            items.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
+        }
+    }
+    return items;
+}
+
+let selectedTimeIndex = -1;
+let timeNavigationAttached = false;
+let timeGridScrollAttached = false;
+let timeSlotObserver = null;
+
+function renderTimeSlots() {
+    const timeGrid = document.getElementById('timeGrid');
+    if (!timeGrid) return;
+    timeGrid.innerHTML = '';
+    timeGrid.style.display = 'flex';
+    timeGrid.style.flexDirection = 'column';
+    timeGrid.style.overflowY = 'auto';
+
+    if (!timeSlotObserver) {
+        timeSlotObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const slot = entry.target;
+                if (entry.isIntersecting) {
+                    slot.style.opacity = '1';
+                    slot.style.transform = 'scale(1)';
+                } else {
+                    slot.style.opacity = '0';
+                    slot.style.transform = 'scale(0.7)';
+                }
+            });
+        }, {
+            root: timeGrid,
+            threshold: 0.1
+        });
+    }
+
+    const timeItems = getTimeItems();
+    timeItems.forEach((timeStr, index) => {
+        const slot = document.createElement('div');
+        slot.className = 'time-slot';
+        slot.textContent = timeStr;
+        slot.dataset.index = index;
+        slot.tabIndex = 0;
+        slot.style.opacity = '0';
+        slot.style.transform = 'scale(0.7)';
+        slot.style.transition = 'transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease, background 0.2s ease';
+        slot.style.width = '100%';
+        slot.style.minWidth = '0';
+        slot.onclick = () => selectTime(slot);
+        slot.onkeydown = (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                slot.click();
+            }
+        };
+        timeGrid.appendChild(slot);
+        timeSlotObserver.observe(slot);
+    });
+
+    updateTimeGradients(timeGrid);
+    if (!timeGridScrollAttached) {
+        timeGrid.addEventListener('scroll', () => updateTimeGradients(timeGrid));
+        timeGridScrollAttached = true;
+    }
+
+    if (!timeNavigationAttached) {
+        window.addEventListener('keydown', handleTimeNavigation);
+        timeNavigationAttached = true;
+    }
+}
+
+function updateTimeGradients(grid) {
+    const wrapper = grid.parentElement;
+    if (!wrapper) return;
+    const top = wrapper.querySelector('.time-gradient.top');
+    const bottom = wrapper.querySelector('.time-gradient.bottom');
+    if (!top || !bottom) return;
+    const scrollTop = grid.scrollTop;
+    const maxScroll = grid.scrollHeight - grid.clientHeight;
+    top.style.opacity = Math.min(scrollTop / 40, 1).toString();
+    bottom.style.opacity = maxScroll <= 0 ? '0' : Math.min((maxScroll - scrollTop) / 40, 1).toString();
+}
+
+function handleTimeNavigation(e) {
+    const timeGrid = document.getElementById('timeGrid');
+    if (!timeGrid || timeGrid.style.display === 'none') return;
+    const slots = Array.from(timeGrid.querySelectorAll('.time-slot:not(.occupied):not(.past)'));
+    if (!slots.length) return;
+
+    if (selectedTimeIndex < 0) {
+        selectedTimeIndex = slots.findIndex(slot => slot.classList.contains('selected'));
+        if (selectedTimeIndex < 0) selectedTimeIndex = 0;
+    }
+
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        selectedTimeIndex = Math.min(selectedTimeIndex + 1, slots.length - 1);
+        slots[selectedTimeIndex].click();
+        slots[selectedTimeIndex].focus();
+    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        selectedTimeIndex = Math.max(selectedTimeIndex - 1, 0);
+        slots[selectedTimeIndex].click();
+        slots[selectedTimeIndex].focus();
+    }
+}
+
 function selectChip(el) {
-    el.classList.toggle('selected');
+    document.querySelectorAll('.chip.selected').forEach(chip => chip.classList.remove('selected'));
+    el.classList.add('selected');
 }
 
 function selectTime(el) {
     if (el.classList.contains('occupied') || el.classList.contains('past')) return;
     document.querySelectorAll('.time-slot').forEach(e => e.classList.remove('selected'));
     el.classList.add('selected');
+    const slots = Array.from(document.querySelectorAll('.time-slot:not(.occupied):not(.past)'));
+    selectedTimeIndex = slots.findIndex(slot => slot === el);
     updateBookingSummary();
 }
 
@@ -1227,7 +1420,8 @@ function checkAvailability(date) {
         help.style.display = 'none';
         return;
     }
-    grid.style.display = 'grid';
+    renderTimeSlots();
+    grid.style.display = 'flex';
     help.style.display = 'block';
 
     const now = new Date();
@@ -1291,42 +1485,35 @@ let calData = {};
 let sessionPhone = ''; // persists across nav clicks for auto-refresh
 
 function confirmBooking() {
-    const fname = document.getElementById('fname').value || '';
-    const fphone = document.getElementById('fphone').value || '';
-    const femail = document.getElementById('femail').value || '';
-    const dateInput = document.getElementById('fdate').value;
+    const fnameEl = document.getElementById('fname');
+    const fphoneEl = document.getElementById('fphone');
+    const fdateEl = document.getElementById('fdate');
+    const fcommentsEl = document.getElementById('fcomments');
+    
+    const fname = fnameEl ? fnameEl.value || '' : '';
+    const fphone = fphoneEl ? fphoneEl.value || '' : '';
+    const dateInput = fdateEl ? fdateEl.value : '';
     const timeSlot = document.querySelector('.time-slot.selected');
-    const gradeSelect = document.getElementById('fgrade');
-    const gradeText = gradeSelect.selectedOptions[0] ? gradeSelect.selectedOptions[0].text : '';
-    const gradeValue = gradeSelect.value;
-    const selectedChips = Array.from(document.querySelectorAll('.chip.selected'));
-    const subject = selectedChips.map(c => c.innerText).join(', ');
+    const selectedChip = document.querySelector('.chip.selected');
+    const subject = selectedChip ? selectedChip.innerText : '';
     const errorDiv = document.getElementById('formError');
 
-    // Email is now OPTIONAL, so we only check Name, Date, Time, and Grade.
-    if (!fname || !dateInput || !timeSlot || !gradeValue) {
+    if (!fname || !dateInput || !timeSlot) {
         if(errorDiv) {
-            errorDiv.innerText = 'נא למלא שם, לבחור רמה, תאריך ושעה.';
+            errorDiv.innerText = 'נא למלא שם, תאריך ושעה.';
             errorDiv.style.display = 'block';
         }
         return;
     }
-    if (selectedChips.length === 0) {
+    if (!subject) {
         if(errorDiv) {
-            errorDiv.innerText = 'נא לבחור לפחות נושא אחד.';
+            errorDiv.innerText = 'נא לבחור שירות אחד.';
             errorDiv.style.display = 'block';
         }
         return;
     }
 
     const selectedTime = timeSlot.innerText.trim();
-    if (selectedTime === '14:00') {
-        if(errorDiv) {
-            errorDiv.innerText = 'שעה זו אינה פנויה יותר לתיאום.';
-            errorDiv.style.display = 'block';
-        }
-        return;
-    }
 
     if (!isSlotAvailable(dateInput, selectedTime)) {
         if(errorDiv) {
@@ -1341,17 +1528,13 @@ function confirmBooking() {
     const newBooking = {
         name: fname,
         phone: fphone,
-        email: femail,
         topic: subject,
         subject: subject,
-        grade: gradeText,
-        appointmentFormat: document.getElementById('fappointmenttype').value,
         date: dateInput,
         time: selectedTime,
-        comments: document.getElementById('fcomments').value || '',
+        comments: fcommentsEl ? fcommentsEl.value || '' : '',
         status: "ממתין",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        // Reminder flags for backend scheduling (24h and 2h before)
         reminders: {
             confirmationSent: false,
             h24Sent: false,
@@ -1926,22 +2109,69 @@ function renderAvailGrid() {
   const sunday = new Date(today);
   sunday.setDate(today.getDate() - dayOfWeek + (currentWeekOffset * 7));
 
-  const cols = document.querySelectorAll('.avail-col');
-  cols.forEach((col, i) => {
+  const grid = document.getElementById('adminAvailGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const dayColumns = [];
+  days.forEach((day, i) => {
     const d = new Date(sunday);
     d.setDate(sunday.getDate() + i);
     const dateISO = d.toISOString().split('T')[0];
     const dateDisplay = d.getDate() + '/' + (d.getMonth() + 1);
-    col.querySelector('h3').innerText = days[i] + '\n' + dateDisplay;
-    col.querySelector('h3').style.whiteSpace = 'pre';
-    col.querySelector('h3').dataset.date = dateISO;
 
-    col.querySelectorAll('.avail-slot').forEach(slot => {
-      slot.classList.add('free');
-      slot.classList.remove('booked');
-      slot.onmouseover = null;
-      slot.onmouseout = null;
+    const col = document.createElement('div');
+    col.className = 'avail-col';
+
+    const header = document.createElement('h3');
+    header.innerText = `${day}\n${dateDisplay}`;
+    header.dataset.date = dateISO;
+    col.appendChild(header);
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'time-scroll-wrapper';
+
+    const top = document.createElement('div');
+    top.className = 'time-gradient top';
+    const bottom = document.createElement('div');
+    bottom.className = 'time-gradient bottom';
+    const timeGrid = document.createElement('div');
+    timeGrid.className = 'avail-time-grid';
+    timeGrid.style.display = 'flex';
+    timeGrid.style.flexDirection = 'column';
+    timeGrid.style.overflowY = 'auto';
+
+    getTimeItems().forEach(timeStr => {
+      const slot = document.createElement('div');
+      slot.className = 'avail-slot free';
+      slot.textContent = timeStr;
+      slot.tabIndex = 0;
+      slot.onclick = () => handleAdminSlotClick(slot);
+      slot.onkeydown = (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          slot.click();
+        }
+      };
+      timeGrid.appendChild(slot);
     });
+
+    wrapper.appendChild(top);
+    wrapper.appendChild(timeGrid);
+    wrapper.appendChild(bottom);
+    col.appendChild(wrapper);
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.type = 'button';
+    copyBtn.innerText = 'העתק לשבוע הבא';
+    copyBtn.onclick = () => copyDayAvail(copyBtn);
+    col.appendChild(copyBtn);
+
+    grid.appendChild(col);
+    dayColumns.push(col);
+
+    timeGrid.addEventListener('scroll', () => updateTimeGradients(timeGrid));
   });
 
   const start = new Date(sunday).toISOString().split('T')[0];
@@ -1949,48 +2179,67 @@ function renderAvailGrid() {
   end.setDate(sunday.getDate() + 7);
   const endStr = end.toISOString().split('T')[0];
 
-  // Fetch Bookings for current week to show in grid
-  db.collection("bookings").where("date", ">=", start).where("date", "<", endStr).get().then(bookingSnap => {
-      const weekBookings = [];
-      bookingSnap.forEach(d => {
-          const b = d.data();
-          if(b.status !== 'בוטל') weekBookings.push(b);
-      });
+  const slotsMap = {};
+  grid.querySelectorAll('.avail-slot').forEach(slot => {
+    const date = slot.closest('.avail-col').querySelector('h3').dataset.date;
+    const time = slot.innerText.trim();
+    slot.classList.add('free');
+    slot.classList.remove('booked');
+    slot.onmouseover = null;
+    slot.onmouseout = null;
+    slotsMap[`${date}_${time}`] = slot;
+  });
 
-      db.collection("availability")
-        .where("date", ">=", start)
-        .where("date", "<", endStr)
-        .get().then(snapshot => {
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            cols.forEach(col => {
-              if (col.querySelector('h3').dataset.date === data.date) {
-                col.querySelectorAll('.avail-slot').forEach(slot => {
-                  if (slot.innerText.trim() === data.time) {
-                    if (data.isFree) slot.classList.add('free');
-                    else slot.classList.remove('free');
-                  }
-                });
-              }
-            });
-          });
+  const availObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const slot = entry.target;
+      if (entry.isIntersecting) {
+        slot.style.opacity = '1';
+        slot.style.transform = 'scale(1)';
+      } else {
+        slot.style.opacity = '0';
+        slot.style.transform = 'scale(0.7)';
+      }
+    });
+  }, {
+    root: null,
+    threshold: 0.1
+  });
+  grid.querySelectorAll('.avail-slot').forEach(slot => {
+    availObserver.observe(slot);
+  });
 
-          // Overlay bookings onto grid
-          weekBookings.forEach(b => {
-              cols.forEach(col => {
-                  if (col.querySelector('h3').dataset.date === b.date) {
-                      col.querySelectorAll('.avail-slot').forEach(slot => {
-                          if (slot.innerText.trim() === b.time) {
-                              slot.classList.remove('free');
-                              slot.classList.add('booked');
-                              slot.onmouseover = (e) => showSlotTooltip(e, b);
-                              slot.onmouseout = hideSlotTooltip;
-                          }
-                      });
-                  }
-              });
-          });
-        });
+  Promise.all([
+    db.collection('bookings').where('date', '>=', start).where('date', '<', endStr).get(),
+    db.collection('availability').where('date', '>=', start).where('date', '<', endStr).get()
+  ]).then(([bookingSnap, availSnap]) => {
+    const weekBookings = [];
+    bookingSnap.forEach(d => {
+      const b = d.data();
+      if (b.status !== 'בוטל') weekBookings.push(b);
+    });
+
+    availSnap.forEach(doc => {
+      const data = doc.data();
+      const slot = slotsMap[`${data.date}_${data.time}`];
+      if (slot) {
+        if (data.isFree) {
+          slot.classList.add('free');
+        } else {
+          slot.classList.remove('free');
+        }
+      }
+    });
+
+    weekBookings.forEach(b => {
+      const slot = slotsMap[`${b.date}_${b.time}`];
+      if (slot) {
+        slot.classList.remove('free');
+        slot.classList.add('booked');
+        slot.onmouseover = (e) => showSlotTooltip(e, b);
+        slot.onmouseout = hideSlotTooltip;
+      }
+    });
   });
 }
 
