@@ -49,53 +49,85 @@ nav {
   transition: padding 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 30px rgba(0,0,0,0.6);
 }
-/* HAMBURGER & SIDEBAR */
-.hamburger {
-  display: flex; flex-direction: column; justify-content: space-between;
-  width: 30px; height: 21px; cursor: pointer; z-index: 1001; position: relative;
+/* ── DOCK NAVIGATION ──────────────────────────────── */
+.dock-outer {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
 }
-.hamburger span {
-  display: block; height: 3px; width: 100%; background: var(--gold);
-  border-radius: 3px; transition: all 0.3s ease;
-  box-shadow: 0 0 5px rgba(201,168,76,0.3);
+.dock-panel {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  background: var(--nav-bg);
+  border: 1px solid var(--border-gold);
+  padding: 10px 16px;
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px var(--glow);
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  height: 70px;
+  will-change: transform;
 }
-.hamburger.active span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
-.hamburger.active span:nth-child(2) { opacity: 0; }
-.hamburger.active span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
-
-.sidebar-overlay {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-  background: rgba(0,0,0,0.6);
-  z-index: 999; opacity: 0; visibility: hidden; transition: all 0.3s ease;
+.dock-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: width 0.1s ease, height 0.1s ease, background 0.2s, border-color 0.2s;
+  will-change: width, height;
 }
-.sidebar-overlay.active { opacity: 1; visibility: visible; }
-
-.sidebar-menu {
-  position: fixed; top: 0; left: -320px; width: 280px; height: 100vh;
-  background: var(--nav-bg); border-right: 1px solid var(--border-gold);
-  z-index: 1000; display: flex; flex-direction: column; padding: 6rem 2.5rem 2rem;
-  transition: left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  box-shadow: 5px 0 40px rgba(0,0,0,0.6);
-  gap: 2rem;
+.dock-item:hover {
+  background: rgba(201, 168, 76, 0.15);
+  border-color: var(--gold);
 }
-.sidebar-menu.active { left: 0; }
-
-.sidebar-menu a {
-  color: var(--text); text-decoration: none; font-weight: 600;
-  font-size: 1.4rem; transition: color 0.3s; cursor: pointer;
-  position: relative; align-self: flex-start;
+.dock-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--gold);
+  transition: color 0.2s;
 }
-.sidebar-menu a:hover, .sidebar-menu a.nav-active { color: var(--gold); text-shadow: 0 0 10px var(--glow); }
-.sidebar-menu a::after {
-  content: ''; position: absolute; bottom: -4px; right: 0;
-  width: 0; height: 2px; background: var(--gold);
-  border-radius: 1px; transition: width 0.3s ease;
-  box-shadow: 0 0 8px var(--glow);
+.dock-item:hover .dock-icon {
+  color: var(--yellow);
 }
-.sidebar-menu a:hover::after, .sidebar-menu a.nav-active::after { width: 100%; }
-
-.sidebar-menu .theme-btn {
-  align-self: flex-start; margin-bottom: 1rem;
+.dock-label {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 8px;
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid var(--border-gold);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+.dock-item:hover .dock-label {
+  opacity: 1;
+  visibility: visible;
+}
+@media (hover: none) {
+  .dock-item:active {
+    width: 60px !important;
+    height: 60px !important;
+    background: rgba(201, 168, 76, 0.25);
+    border-color: var(--gold);
+  }
 }
 
 .admin-hidden { display: none !important; }
@@ -299,11 +331,7 @@ select option { background: #1a1a1a; color: var(--text); }
   opacity: 0.22 !important; filter: grayscale(1); pointer-events: none !important;
 }
 
-body.light-mode .time-slot { background: rgba(255,255,255,0.8); border: 1px solid #ddd; color: #121212; }
-body.light-mode .time-slot:hover { background: rgba(201,168,76,0.07); border-color: var(--gold); }
-body.light-mode .time-slot.selected { background: linear-gradient(135deg,#c9a84c,#a07828) !important; color: #ffffff !important; box-shadow: 0 8px 25px rgba(201,168,76,0.4); border-color: #c9a84c !important; }
-body.light-mode .time-slot.occupied, body.light-mode .time-slot.past { background: #f0f0f0 !important; color: #ccc !important; border-color: #eee !important; filter: grayscale(1); }
-body.light-mode #bookingSummary span { color: #121212 !important; font-weight: 800 !important; }
+
 
 /* ── PROGRESS STEPPER ─────────────────────────────── */
 .progress {
@@ -600,15 +628,7 @@ body.light-mode #bookingSummary span { color: #121212 !important; font-weight: 8
   #my-appointments .glass { padding: 1.2rem 1rem; }
 }
 
-/* ── THEME TOGGLE ────────────────────────────────── */
-.theme-btn {
-  background: none; border: 1px solid var(--border-gold); color: var(--gold);
-  cursor: pointer; transition: all 0.3s ease; padding: 0;
-  display: flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 50%;
-}
-.theme-btn:hover { background: rgba(201,168,76,0.1); transform: scale(1.1) rotate(15deg); }
-.theme-btn svg { width: 18px; height: 18px; stroke: var(--gold); stroke-width: 2.5; }
+
 
 /* ── AUTH MODAL ──────────────────────────────────── */
 #auth-modal {
@@ -668,10 +688,10 @@ body.light-mode #bookingSummary span { color: #121212 !important; font-weight: 8
 #floatingContact .fc-copy svg { width: 16px; height: 16px; fill: var(--gold); stroke: none; }
 @media (max-width: 900px) {
   #floatingContact {
-    bottom: 1rem; left: 50%; transform: translateX(-50%);
+    bottom: 1rem; left: 1rem; transform: none;
     padding: 0.55rem 1rem;
   }
-  #floatingContact:hover { transform: translateX(-50%) translateY(-2px); }
+  #floatingContact:hover { transform: translateY(-2px); }
   #floatingContact .fc-label { display: none; }
 }
 
@@ -787,29 +807,18 @@ input.field-locked {
 
 <nav id="navbar">
     <div style="display:flex; align-items:center; gap:1.2rem;">
-    <div class="logo" id="adminTrigger">נחשון Barber</div>
+        <div class="logo" id="adminTrigger">נחשון Barber</div>
+    </div>
     <div class="nav-auth" id="navAuth">
         <div id="navAuthButtons" style="display:flex; gap:0.6rem;">
             <button class="btn btn-outline nav-auth-btn" onclick="navShowLogin()">התחברות</button>
             <button class="btn nav-auth-btn" onclick="navShowRegister()">הרשמה</button>
         </div>
-        <div id="navUserChip" onclick="closeMenuAndOpenClientArea()">
+        <div id="navUserChip" onclick="openClientArea()">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
             <span id="navUserName"></span>
         </div>
     </div>
-    </div>
-    <div class="hamburger" id="hamburgerBtn" onclick="toggleMenu()">
-        <span></span><span></span><span></span>
-    </div>
-    <div class="sidebar-menu" id="sidebarMenu">
-        <button id="themeToggle" class="theme-btn" onclick="toggleTheme()"></button>
-        <a href="#hero" onclick="closeMenuAndLogoutAdmin()" id="navHome">ראשי</a>
-        <a href="#book" onclick="closeMenuAndLogoutAdmin()" id="navBook">קביעת תור</a>
-        <a href="javascript:void(0)" onclick="closeMenuAndOpenClientArea()" id="navAppointments">התורים שלי</a>
-        <a href="javascript:void(0)" onclick="sidebarLogout()" id="navLogout" style="display:none; color:#f87171;">התנתק</a>
-    </div>
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMenu()"></div>
 </nav>
 
 <section id="hero" style="overflow: hidden;">
@@ -923,8 +932,8 @@ input.field-locked {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 3rem;">
             <div style="display:flex; align-items:center; gap: 1rem;">
                 <h2 style="margin-bottom: 0;">התורים שלי</h2>
-                <button id="refreshClientBtn" class="theme-btn" onclick="fetchMyAppointments()" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); display: none;">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                <button id="refreshClientBtn" onclick="fetchMyAppointments()" style="width: 38px; height: 38px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; padding: 0; transition: background 0.2s, border-color 0.2s; flex-shrink: 0;" onmouseover="this.style.background='rgba(201,168,76,0.1)';this.style.borderColor='var(--border-gold)'" onmouseout="this.style.background='rgba(255,255,255,0.05)';this.style.borderColor='var(--border)'">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M23 4v6h-6"></path><path d="M1 20v-6h6"></path><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                 </button>
             </div>
             <button class="btn btn-sm btn-outline" onclick="logoutClient()">חזרה לדף הבית</button>
@@ -968,11 +977,7 @@ input.field-locked {
                     </div>
                     <div class="input-group" style="margin-top:1rem;">
                         <label>מספר טלפון</label>
-                        <input type="tel" id="regPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') document.getElementById('regEmail').focus()">
-                    </div>
-                    <div class="input-group" style="margin-top:1rem;">
-                        <label>כתובת אימייל (לתזכורות)</label>
-                        <input type="email" id="regEmail" placeholder="example@email.com" onkeydown="if(event.key==='Enter') submitRegister()">
+                        <input type="tel" id="regPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') submitRegister()">
                     </div>
                     <button class="btn" onclick="submitRegister()" style="width:100%; margin-top:1rem;">הרשמה והתחברות</button>
                     <button class="btn btn-outline auth-back-btn" onclick="showAuthButtons()">חזרה</button>
@@ -1076,12 +1081,9 @@ input.field-locked {
             </div>
             <div class="input-group">
                 <label>מספר טלפון</label>
-                <input type="tel" id="modalRegPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') document.getElementById('modalRegEmail').focus()">
+                <input type="tel" id="modalRegPhone" placeholder="050-0000000" onkeydown="if(event.key==='Enter') modalSubmitRegister()">
             </div>
-            <div class="input-group">
-                <label>כתובת אימייל לתזכורות</label>
-                <input type="email" id="modalRegEmail" placeholder="example@email.com" onkeydown="if(event.key==='Enter') modalSubmitRegister()">
-            </div>
+            
             <button class="btn" onclick="modalSubmitRegister()" style="width:100%; margin-top:0.5rem;">הרשמה</button>
             <p style="text-align:center; margin-top:1.2rem; font-size:0.9rem; opacity:0.7;">כבר רשום? <span onclick="showModalLogin()" style="color:var(--gold); cursor:pointer; text-decoration:underline;">התחבר כאן</span></p>
             <button class="btn btn-outline" onclick="closeClientAuthModal()" style="width:100%; margin-top:0.8rem; font-size:0.85rem; opacity:0.65;">סגור</button>
@@ -1099,6 +1101,33 @@ input.field-locked {
         </svg>
     </span>
 </a>
+
+<div class="dock-outer">
+    <div class="dock-panel" id="dockPanel">
+        <div class="dock-item" onclick="navigateToHero()">
+            <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+            <span class="dock-label">ראשי</span>
+        </div>
+        <div class="dock-item" onclick="navigateToBook()">
+            <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
+            </svg>
+            <span class="dock-label">קביעת תור</span>
+        </div>
+        <div class="dock-item" onclick="openClientArea()">
+            <svg class="dock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span class="dock-label">התורים שלי</span>
+        </div>
+    </div>
+</div>
 
 <div id="toast-container"></div>
 
@@ -1128,19 +1157,11 @@ function changeWeek(offset) {
     renderAvailGrid();
 }
 
-const MOON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-const SUN_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+
 
 let tokenClient;
 window.onload = function() {
     updateTopics('');
-    const btn = document.getElementById('themeToggle');
-    if (localStorage.getItem('theme') === 'light') {
-        document.body.classList.add('light-mode');
-        btn.innerHTML = SUN_SVG;
-    } else {
-        btn.innerHTML = MOON_SVG;
-    }
     if (window.google) {
         tokenClient = google.accounts.oauth2.initTokenClient({
             client_id: CLIENT_ID,
@@ -1168,11 +1189,10 @@ window.onload = function() {
         }
     });
 
-    // Enter-key chain: Name → Phone → Email → Next
+    // Enter-key chain: Name → Phone → Next
     const fnameEl = document.getElementById('fname');
     const fphoneEl = document.getElementById('fphone');
-    const femailEl = document.getElementById('femail');
-    
+
     if (fnameEl) {
         fnameEl.addEventListener('keydown', e => {
             if (e.key === 'Enter') { e.preventDefault(); if (fphoneEl) fphoneEl.focus(); }
@@ -1180,28 +1200,45 @@ window.onload = function() {
     }
     if (fphoneEl) {
         fphoneEl.addEventListener('keydown', e => {
-            if (e.key === 'Enter') { e.preventDefault(); if (femailEl) femailEl.focus(); else nextStep(2); }
-        });
-    }
-    if (femailEl) {
-        femailEl.addEventListener('keydown', e => {
             if (e.key === 'Enter') { e.preventDefault(); nextStep(2); }
         });
     }
 
-    // Nav active state on scroll
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = { 'hero': 'navHome', 'book': 'navBook' };
-    const scrollObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                document.querySelectorAll('nav a').forEach(a => a.classList.remove('nav-active'));
-                const linkId = navLinks[entry.target.id];
-                if (linkId) document.getElementById(linkId).classList.add('nav-active');
-            }
+    // Dock Proximity Effect
+    const dockPanel = document.getElementById('dockPanel');
+    const dockItems = dockPanel.querySelectorAll('.dock-item');
+    const baseSize = 50;
+    const magnification = 70;
+    const threshold = 200;
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+    if (!isTouchDevice) {
+        dockPanel.addEventListener('mousemove', (e) => {
+            const clientX = e.clientX;
+            dockItems.forEach(item => {
+                const rect = item.getBoundingClientRect();
+                const itemCenterX = rect.left + rect.width / 2;
+                const distance = Math.abs(clientX - itemCenterX);
+                
+                if (distance < threshold) {
+                    const ratio = 1 - distance / threshold;
+                    const scale = baseSize + (magnification - baseSize) * Math.sin(ratio * Math.PI / 2);
+                    item.style.width = `${scale}px`;
+                    item.style.height = `${scale}px`;
+                } else {
+                    item.style.width = `${baseSize}px`;
+                    item.style.height = `${baseSize}px`;
+                }
+            });
         });
-    }, { threshold: 0.4 });
-    sections.forEach(s => scrollObserver.observe(s));
+
+        dockPanel.addEventListener('mouseleave', () => {
+            dockItems.forEach(item => {
+                item.style.width = `${baseSize}px`;
+                item.style.height = `${baseSize}px`;
+            });
+        });
+    }
 };
 
 function updateBookingSummary() {
@@ -1233,18 +1270,7 @@ function updateBookingSummary() {
     }, observerOptions);
     document.querySelectorAll('section').forEach(sec => observer.observe(sec));
 
-function toggleTheme() {
-    const body = document.body;
-    const btn = document.getElementById('themeToggle');
-    body.classList.toggle('light-mode');
-    if (body.classList.contains('light-mode')) {
-        btn.innerHTML = SUN_SVG;
-        localStorage.setItem('theme', 'light');
-    } else {
-        btn.innerHTML = MOON_SVG;
-        localStorage.setItem('theme', 'dark');
-    }
-}
+
 
 const _navbar = document.getElementById('navbar');
 let _scrollTicking = false;
@@ -1533,7 +1559,7 @@ function confirmBooking() {
         date: dateInput,
         time: selectedTime,
         comments: fcommentsEl ? fcommentsEl.value || '' : '',
-        status: "ממתין",
+        status: "מאושר",
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         reminders: {
             confirmationSent: false,
@@ -1558,7 +1584,7 @@ function confirmBooking() {
         const startDate = dateInput.replace(/-/g, '') + 'T' + selectedTime.replace(':', '') + '00';
         const endHour = (parseInt(selectedTime.split(':')[0]) + 1).toString().padStart(2, '0');
         const endDate = dateInput.replace(/-/g, '') + 'T' + endHour + selectedTime.split(':')[1] + '00';
-        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תור מתמטיקה עם גבאי')}&dates=${startDate}/${endDate}&details=${encodeURIComponent('נושא: ' + subject + '\nשם: ' + fname)}&location=Online`;
+        const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תור לספר ✂️')}&dates=${startDate}/${endDate}&details=${encodeURIComponent('נושא: ' + subject + '\nשם: ' + fname)}`;
 
         window.open(gcalUrl, '_blank');
 
@@ -1614,20 +1640,18 @@ function buildGCalLink(b) {
     const start = b.date.replace(/-/g, '') + 'T' + b.time.replace(':', '') + '00';
     const endHour = (parseInt(b.time.split(':')[0]) + 1).toString().padStart(2, '0');
     const end = b.date.replace(/-/g, '') + 'T' + endHour + b.time.split(':')[1] + '00';
-    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תור מתמטיקה עם גבאי')}&dates=${start}/${end}&details=${encodeURIComponent('נושא: ' + b.topic)}&location=Online`;
+    return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('תור לספר ✂️')}&dates=${start}/${end}&details=${encodeURIComponent('נושא: ' + b.topic + '\nשם: ' + b.name)}`;
 }
 
 function getProfile() {
     const name = localStorage.getItem('gabay_name');
     const phone = localStorage.getItem('gabay_phone');
-    const email = localStorage.getItem('gabay_email') || '';
-    return (name && phone) ? { name, phone, email } : null;
+    return (name && phone) ? { name, phone } : null;
 }
 
-function saveProfile(name, phone, email) {
+function saveProfile(name, phone) {
     localStorage.setItem('gabay_name', name);
     localStorage.setItem('gabay_phone', phone);
-    if (email) localStorage.setItem('gabay_email', email);
     applyProfileToBookingForm();
     updateNavAuth();
 }
@@ -1635,7 +1659,7 @@ function saveProfile(name, phone, email) {
 function clearProfile() {
     localStorage.removeItem('gabay_name');
     localStorage.removeItem('gabay_phone');
-    localStorage.removeItem('gabay_email');
+    localStorage.removeItem('gabay_email'); // clean up legacy email if present
 }
 
 function updateNavAuth() {
@@ -1700,8 +1724,7 @@ function modalSubmitLogin() {
         snap.forEach(doc => appointments.push(doc.data()));
         appointments.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
         const name = appointments[0].name || '';
-        const email = appointments[0].email || '';
-        saveProfile(name, phone, email);
+        saveProfile(name, phone);
         sessionPhone = phone;
         closeClientAuthModal();
         showToast('שלום ' + name + '! כניסה בוצעה בהצלחה');
@@ -1712,24 +1735,18 @@ function modalSubmitLogin() {
 function modalSubmitRegister() {
     const name = document.getElementById('modalRegName').value.trim();
     const phone = document.getElementById('modalRegPhone').value.trim();
-    const email = document.getElementById('modalRegEmail').value.trim();
     if (!name) { showToast('נא להזין שם'); return; }
     if (!phone) { showToast('נא להזין מספר טלפון'); return; }
-    if (!email) { showToast('נא להזין כתובת אימייל'); return; }
 
-    saveProfile(name, phone, email);
+    saveProfile(name, phone);
     sessionPhone = phone;
     closeClientAuthModal();
     showToast('שלום ' + name + '! נרשמת בהצלחה');
     document.getElementById('modalRegName').value = '';
     document.getElementById('modalRegPhone').value = '';
-    document.getElementById('modalRegEmail').value = '';
 }
 
-function sidebarLogout() {
-    closeMenu();
-    logoutProfile();
-}
+
 
 /* ── Auth screen navigation ── */
 function showAuthButtons() {
@@ -1779,8 +1796,7 @@ function submitLogin() {
         snap.forEach(doc => appointments.push(doc.data()));
         appointments.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
         const name = appointments[0].name || '';
-        const email = appointments[0].email || '';
-        saveProfile(name, phone, email);
+        saveProfile(name, phone);
         sessionPhone = phone;
         showToast('שלום ' + name + '! כניסה בוצעה בהצלחה');
         showLoggedInChip(name, phone);
@@ -1794,11 +1810,10 @@ function submitLogin() {
 function submitRegister() {
     const name = document.getElementById('regName').value.trim();
     const phone = document.getElementById('regPhone').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
     if (!name) { showToast('נא להזין שם'); return; }
     if (!phone) { showToast('נא להזין מספר טלפון'); return; }
 
-    saveProfile(name, phone, email);
+    saveProfile(name, phone);
     sessionPhone = phone;
     showToast('שלום ' + name + '! נרשמת בהצלחה');
     showLoggedInChip(name, phone);
@@ -1826,28 +1841,22 @@ function applyProfileToBookingForm() {
     const profile = getProfile();
     const nameInput = document.getElementById('fname');
     const phoneInput = document.getElementById('fphone');
-    const emailInput = document.getElementById('femail');
     const identityFields = document.getElementById('step1IdentityFields');
     const summaryBar = document.getElementById('profileSummaryBar');
     if (!nameInput || !phoneInput) return;
 
     if (profile) {
-        // Fill hidden inputs so confirmBooking() can read them
         nameInput.value = profile.name;
         phoneInput.value = profile.phone;
-        if (emailInput && profile.email) emailInput.value = profile.email;
-
-        // Hide the full identity fields, show compact summary
         if (identityFields) identityFields.style.display = 'none';
         if (summaryBar) {
             summaryBar.style.display = 'flex';
             document.getElementById('psbName').textContent = profile.name;
-            document.getElementById('psbPhone').textContent = profile.phone + (profile.email ? ' · ' + profile.email : '');
+            document.getElementById('psbPhone').textContent = profile.phone;
         }
     } else {
         nameInput.value = '';
         phoneInput.value = '';
-        if (emailInput) emailInput.value = '';
         if (identityFields) identityFields.style.display = 'block';
         if (summaryBar) summaryBar.style.display = 'none';
     }
@@ -1970,19 +1979,12 @@ function sendCancellationEmails(b) {
         date: b.date || '',
         time: b.time || '',
         topic: b.topic || '',
-        grade: b.grade || '',
         phone: b.phone || '',
-        email: b.email || '',
-        appointment_format: b.appointmentFormat || '',
         user_comments: 'התור בוטל על ידי הלקוח',
         type: 'ביטול תור'
     };
-    // Admin
+    // Notify admin only
     emailjs.send("service_uiiqhnd", "template_e6swvbo", { ...base, to_email: "nooam.gabay@gmail.com" }, "JI7HdPnpg063aq0Pl");
-    // Client
-    if (b.email) {
-        emailjs.send("service_uiiqhnd", "template_e6swvbo", { ...base, to_email: b.email }, "JI7HdPnpg063aq0Pl");
-    }
 }
 
 function backToLogin() {
@@ -2034,27 +2036,16 @@ function togglePass() {
   input.type = input.type === 'password' ? 'text' : 'password';
 }
 
-// Sidebar Menu Logic
-function toggleMenu() {
-    document.getElementById('sidebarMenu').classList.toggle('active');
-    document.getElementById('sidebarOverlay').classList.toggle('active');
-    document.getElementById('hamburgerBtn').classList.toggle('active');
-}
-
-function closeMenu() {
-    document.getElementById('sidebarMenu').classList.remove('active');
-    document.getElementById('sidebarOverlay').classList.remove('active');
-    document.getElementById('hamburgerBtn').classList.remove('active');
-}
-
-function closeMenuAndLogoutAdmin() {
-    closeMenu();
+function navigateToHero() {
     logoutAdmin();
+    logoutClient();
+    document.getElementById('hero').scrollIntoView({ behavior: 'smooth' });
 }
 
-function closeMenuAndOpenClientArea() {
-    closeMenu();
-    openClientArea();
+function navigateToBook() {
+    logoutAdmin();
+    logoutClient();
+    document.getElementById('book').scrollIntoView({ behavior: 'smooth' });
 }
 
 function logoutAdmin() {
@@ -2078,7 +2069,7 @@ function renderAdminBookings() {
       if (b.status === 'מאושר') div.classList.add('approved');
       else if (b.status === 'בוטל') div.classList.add('cancelled');
 
-      let statusBadge = b.status === 'מאושר' ? `<span class="badge ok">מאושר</span>` : b.status === 'בוטל' ? `<span class="badge cancel">בוטל</span>` : `<span class="badge wait">ממתין לאישור</span>`;
+      let statusBadge = b.status === 'מאושר' ? `<span class="badge ok">מאושר</span>` : `<span class="badge cancel">בוטל</span>`;
       let actionBtns = '';
       if (b.status === 'בוטל') {
           actionBtns = `
@@ -2091,9 +2082,6 @@ function renderAdminBookings() {
             <button class="btn btn-mini btn-outline" onclick="startReschedule('${doc.id}', '${b.name}')">הזז תור</button>
             <button class="btn btn-mini btn-danger" onclick="cancelBookingDB('${doc.id}', this)">בטל תור</button>
           `;
-          if (b.status === 'ממתין') {
-              actionBtns = `<button class="btn btn-mini btn-outline" onclick="approveBookingDB('${doc.id}', this)">אשר תור</button>` + actionBtns;
-          }
       }
       div.innerHTML = `<div class="schedule-info"><strong>${b.name || ''} - ${b.phone || ''}</strong><span>${b.grade || ''} | ${b.subject || b.topic || ''} | ${b.appointmentFormat || ''} | ${b.date || ''}, ${b.time || ''}</span></div><div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">${statusBadge}${actionBtns}</div>`;
       list.appendChild(div);
@@ -2363,58 +2351,21 @@ function deleteCancelledBookings() {
   });
 }
 
-function approveBookingDB(id, btn) {
-  db.collection("bookings").doc(id).get().then(doc => {
-    if (!doc.exists) return;
-    const b = doc.data();
-    db.collection("bookings").doc(id).update({ status: "מאושר" }).then(() => {
-      showToast('התור אושר!');
 
-      db.collection("availability").doc(`${b.date}_${b.time}`).set({
-        date: b.date,
-        time: b.time,
-        isFree: false
-      }).then(() => {
-        renderAvailGrid();
-      });
-    });
-  });
-}
 
 function sendNotification(type, bookingData) {
-  // 1. Always send to Admin
+  // Send to Admin only (no client email)
   const adminParams = {
     to_email: "nooam.gabay@gmail.com",
     client_name: bookingData.name,
     date: bookingData.date,
     time: bookingData.time,
     topic: bookingData.topic,
-    grade: bookingData.grade,
     phone: bookingData.phone || 'לא הוזן',
-    email: bookingData.email || 'לא הוזן',
-    appointment_format: bookingData.appointmentFormat,
     user_comments: bookingData.comments || '',
     type: "ADMIN_NOTIFICATION"
   };
   emailjs.send("service_uiiqhnd", "template_e6swvbo", adminParams, "JI7HdPnpg063aq0Pl");
-
-  // 2. Send to Client ONLY if email exists
-  if (bookingData.email) {
-    const clientParams = {
-      to_email: bookingData.email,
-      client_name: bookingData.name,
-      date: bookingData.date,
-      time: bookingData.time,
-      topic: bookingData.topic,
-      grade: bookingData.grade,
-      phone: bookingData.phone,
-      email: bookingData.email,
-      appointment_format: bookingData.appointmentFormat,
-      user_comments: bookingData.comments || '',
-      type: type
-    };
-    emailjs.send("service_uiiqhnd", "template_e6swvbo", clientParams, "JI7HdPnpg063aq0Pl");
-  }
 }
 
 function deleteFromCalendar(booking) {
@@ -2467,7 +2418,6 @@ function copyDayAvail(btn) {
 function resetForm() {
   document.getElementById('fname').value = '';
   document.getElementById('fphone').value = '';
-  document.getElementById('femail').value = '';
   document.getElementById('fdate').value = '';
   document.getElementById('fcomments').value = '';
   document.querySelectorAll('.chip').forEach(e => e.classList.remove('selected'));
